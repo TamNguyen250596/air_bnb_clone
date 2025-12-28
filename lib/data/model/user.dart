@@ -1,22 +1,13 @@
-// ========== User Model ==========
-class User {
-  // ========== Constructor ==========
-  User({
-    required this.id,
-    this.email,
-    this.bio,
-    this.city,
-    this.country,
-    this.firstName,
-    this.lastName,
-    this.fullName,
-    this.imageUrl,
-    this.isHost,
-    this.isCurrentlyHosting
-  });
+import 'package:realm/realm.dart';
 
+part 'user.realm.dart';
+
+@RealmModel()
+class _User {
   // ========== Properties ==========
-  String id;
+  @PrimaryKey()
+  late String id;
+
   String? email;
   String? bio;
   String? city;
@@ -26,5 +17,5 @@ class User {
   String? fullName;
   String? imageUrl;
   bool? isHost;
-  bool? isCurrentlyHosting;
+  bool isCurrentlyHosting = false;
 }

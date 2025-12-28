@@ -304,7 +304,7 @@ static void **NextStackFrame(void **old_fp, const void *uc,
 #ifdef __i386__
   // On 32-bit machines, the stack pointer can be very close to
   // 0xffffffff, so we explicitly check for a pointer into the
-  // last two modules in the address space
+  // last two pages in the address space
   if (new_fp_u >= 0xffffe000) return nullptr;
 #endif
 #if !defined(_WIN32)

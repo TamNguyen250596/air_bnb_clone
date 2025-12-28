@@ -41,7 +41,7 @@ namespace {
  *
  * Equivalent code is available from RSA Data Security, Inc.
  * This code has been tested against that, and is equivalent,
- * except that you don't need to include two modules of legalese
+ * except that you don't need to include two pages of legalese
  * with every copy.
  *
  * To compute the message digest of a chunk of bytes, declare an

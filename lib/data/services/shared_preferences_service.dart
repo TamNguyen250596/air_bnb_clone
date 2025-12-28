@@ -25,4 +25,13 @@ class SharedPreferencesService {
       return;
     }
   }
+
+  Future<void> removeToken() async {
+    try {
+      final sharedPreferences = await SharedPreferences.getInstance();
+      await sharedPreferences.remove(_tokenKey);
+      } on Exception catch (_) {
+      return;
+    }
+  }
 }

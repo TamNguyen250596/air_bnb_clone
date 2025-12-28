@@ -5,12 +5,14 @@ import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/cupertino.dart';
 import '../../commons/constants/app_constants.dart';
 import '../model/user.dart';
+import '../services/realm/realm_service.dart';
 import '../services/shared_preferences_service.dart';
 import 'media_repository.dart';
 
 // ========== Auth Result Repository Interface ==========
 abstract class AuthRepository extends ChangeNotifier {
   Future<bool> get isAuthenticated;
+  Future<String?> get userId;
   Future<UserCredential> createUser(
       String email,
       String password,
@@ -22,6 +24,7 @@ abstract class AuthRepository extends ChangeNotifier {
       File? imageFile
       );
   Future<UserCredential> signIn(String email, String password);
+  Future<void> signOut();
 }
 
 // ========== Auth Result Repository Implementation ==========
@@ -31,12 +34,14 @@ class AuthRepositoryRemote extends AuthRepository {
     required AuthService authService,
     required SharedPreferencesService sharedPreferencesService,
     required UserRepository userRepository,
-    required MediaRepository mediaRepository
+    required MediaRepository mediaRepository,
+    required RealmService realmManager,
   }):
         _authService = authService,
         _sharedPreferencesService = sharedPreferencesService,
         _userRepository = userRepository,
-        _mediaRepository = mediaRepository
+        _mediaRepository = mediaRepository,
+        _realmManager = realmManager
   ;
 
   // ========== Properties ==========
@@ -44,6 +49,7 @@ class AuthRepositoryRemote extends AuthRepository {
   final SharedPreferencesService _sharedPreferencesService;
   final UserRepository _userRepository;
   final MediaRepository _mediaRepository;
+  final RealmService _realmManager;
 
   bool? _isAuthenticated;
   String? _userId;
@@ -58,6 +64,17 @@ class AuthRepositoryRemote extends AuthRepository {
     // No status cached, fetch from storage
     await _fetch();
     return _isAuthenticated ?? false;
+  }
+
+  @override
+  Future<String?> get userId async {
+    // Status is cached
+    if (_userId != null) {
+      return _userId;
+    }
+    // No status cached, fetch from storage
+    await _fetch();
+    return _userId;
   }
 
   @override
@@ -80,7 +97,7 @@ class AuthRepositoryRemote extends AuthRepository {
         imageUrl = await _mediaRepository.uploadImage(imageFile, publicId);
       }
       final User user = User(
-        id: id,
+        id,
         email: email,
         bio: bio,
         city: city,
@@ -130,5 +147,15 @@ class AuthRepositoryRemote extends AuthRepository {
 
     _userId = result;
     _isAuthenticated = result != null;
+  }
+
+  @override
+  Future<void> signOut() async {
+    await _sharedPreferencesService.removeToken();
+    await _authService.signOut();
+    _realmManager.deleteAll;
+    _isAuthenticated = false;
+    _userId = null;
+    notifyListeners();
   }
 }
