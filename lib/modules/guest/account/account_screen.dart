@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../commons/widgets/custom_app_bar.dart';
 import 'account_viewmodel.dart';
 
 // ========== Account Screen Widget ==========
@@ -33,9 +35,9 @@ class _AccountScreenState extends State<AccountScreen> {
   // ========== Action Methods ==========
   void _onViewModelUpdate() {
     if (widget.viewModel.errorMessage.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.viewModel.errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(widget.viewModel.errorMessage)));
     }
     if (widget.viewModel.routeId != null) {
       context.go(widget.viewModel.routeId!);
@@ -43,28 +45,53 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   // ========== Build Method ==========
+  Widget _avatar() {
+    return GestureDetector(
+      onTap: () {},
+      child: CachedNetworkImage(
+        imageUrl: widget.viewModel.avatarUrl,
+        placeholder: (context, url) => CircularProgressIndicator(),
+        imageBuilder: (context, imageProvider) => Container(
+          height: 180,
+          width: 180,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(90)),
+            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+          ),
+        ),
+        errorWidget: (context, url, error) => CircleAvatar(
+          backgroundColor: Colors.grey,
+          radius: MediaQuery.of(context).size.width / 4.5,
+          child: Icon(
+            Icons.person,
+            size: MediaQuery.of(context).size.width / 4.5,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionTitle(
-      BuildContext context,
-      String title,
-      IconData icon,
-      VoidCallback onTap,
-      ) {
+    BuildContext context,
+    String title,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return Container(
       color: Colors.white12,
       child: MaterialButton(
         onPressed: onTap,
         height: MediaQuery.of(context).size.height / 9.5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ListTile(
           trailing: Icon(icon, size: 32),
           leading: Text(
             title,
             style: const TextStyle(
-                fontSize: 16,
-                fontWeight: .bold,
-                color: Colors.white
+              fontSize: 16,
+              fontWeight: .bold,
+              color: Colors.white,
             ),
           ),
         ),
@@ -77,26 +104,17 @@ class _AccountScreenState extends State<AccountScreen> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
-        return SingleChildScrollView(
-          child: Padding(
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Profile'),
+          body: SingleChildScrollView(
+            child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   Center(
                     child: Column(
                       children: [
-                        GestureDetector(
-                          onTap: () {},
-                          child: CircleAvatar(
-                            backgroundColor: Colors.grey,
-                            backgroundImage: widget.viewModel.avatarUrl.isNotEmpty ? NetworkImage(widget.viewModel.avatarUrl) : null,
-                            radius: MediaQuery.of(context).size.width / 4.5,
-                            child:  widget.viewModel.avatarUrl.isNotEmpty
-                                ? null
-                                : Icon(Icons.person, size: MediaQuery.of(context).size.width / 4.5, color: Colors.white),
-                          ),
-                        ),
-
+                        _avatar(),
                         const SizedBox(height: 16),
 
                         Text(
@@ -118,8 +136,8 @@ class _AccountScreenState extends State<AccountScreen> {
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-                      ]
-                    )
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   _buildActionTitle(
@@ -145,7 +163,8 @@ class _AccountScreenState extends State<AccountScreen> {
                     widget.viewModel.signOut,
                   ),
                 ],
-              )
+              ),
+            ),
           ),
         );
       },

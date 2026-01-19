@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../commons/widgets/custom_app_bar.dart';
 import 'saved_viewmodel.dart';
 
 // ========== Saved Screen Widget ==========
@@ -44,8 +45,11 @@ class _SavedScreenState extends State<SavedScreen> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
-        return const Center(
-          child: Text("Saved Screen"),
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Favorites'),
+          body: const Center(
+            child: Text("Saved Screen"),
+          ),
         );
       },
     );

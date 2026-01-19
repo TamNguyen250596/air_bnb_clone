@@ -1,9 +1,11 @@
 import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
+import 'package:air_bnb_clone/data/repositories/place_repository.dart';
 import 'package:air_bnb_clone/data/services/auth_service.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../data/repositories/media_repository.dart';
+import '../data/repositories/posting_repository.dart';
 import '../data/repositories/user_repository.dart';
 import '../data/services/media_service.dart';
 import '../data/services/realm/realm_service.dart';
@@ -21,27 +23,32 @@ List<SingleChildWidget> get providers {
     )),
     Provider(
       create: (context) =>
-      MediaRepositoryLocal(mediaService: context.read())
-      as MediaRepository,
+      MediaRepository(mediaService: context.read()),
     ),
     Provider(
       create: (context) =>
-      UserRepositoryRemote(
+      UserRepository(
           fireStoreService: context.read(),
           realmManager: context.read()
-      )
-      as UserRepository,
+      ),
     ),
+    Provider(
+      create: (context) =>
+      PostingRepository(
+          firestoreService: context.read(),
+          realmManager: context.read()
+      ),
+    ),
+    Provider(create: (context) => PlaceRepository()),
     ChangeNotifierProvider(
       create: (context) =>
-      AuthRepositoryRemote(
+      AuthRepository(
           authService: context.read(),
           sharedPreferencesService: context.read(),
           userRepository: context.read(),
           mediaRepository: context.read(),
           realmManager: context.read()
-      )
-      as AuthRepository,
+      ),
     ),
   ];
 }

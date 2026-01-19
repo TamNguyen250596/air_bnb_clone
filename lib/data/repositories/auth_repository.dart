@@ -4,33 +4,16 @@ import 'package:air_bnb_clone/data/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
 import 'package:flutter/cupertino.dart';
 import '../../commons/constants/app_constants.dart';
-import '../model/user.dart';
+import '../models/realm_models/user/user.dart';
+import '../models/realm_models/user/user_extensions.dart';
 import '../services/realm/realm_service.dart';
 import '../services/shared_preferences_service.dart';
 import 'media_repository.dart';
 
-// ========== Auth Result Repository Interface ==========
-abstract class AuthRepository extends ChangeNotifier {
-  Future<bool> get isAuthenticated;
-  Future<String?> get userId;
-  Future<UserCredential> createUser(
-      String email,
-      String password,
-      String firstName,
-      String lastName,
-      String city,
-      String country,
-      String bio,
-      File? imageFile
-      );
-  Future<UserCredential> signIn(String email, String password);
-  Future<void> signOut();
-}
-
 // ========== Auth Result Repository Implementation ==========
-class AuthRepositoryRemote extends AuthRepository {
+class AuthRepository extends ChangeNotifier {
   // ========== Constructor ==========
-  AuthRepositoryRemote({
+  AuthRepository({
     required AuthService authService,
     required SharedPreferencesService sharedPreferencesService,
     required UserRepository userRepository,
@@ -55,7 +38,6 @@ class AuthRepositoryRemote extends AuthRepository {
   String? _userId;
 
   // ========== Public Methods ==========
-  @override
   Future<bool> get isAuthenticated async {
     // Status is cached
     if (_isAuthenticated != null) {
@@ -66,7 +48,6 @@ class AuthRepositoryRemote extends AuthRepository {
     return _isAuthenticated ?? false;
   }
 
-  @override
   Future<String?> get userId async {
     // Status is cached
     if (_userId != null) {
@@ -77,7 +58,6 @@ class AuthRepositoryRemote extends AuthRepository {
     return _userId;
   }
 
-  @override
   Future<UserCredential> createUser(
       String email,
       String password,
@@ -110,7 +90,7 @@ class AuthRepositoryRemote extends AuthRepository {
         isHost: false,
       );
 
-      _userRepository.createUser(user);
+      await _userRepository.createUser(id, user.toFirestore());
       _sharedPreferencesService.saveToken(id);
       _isAuthenticated = true;
       _userId = id;
@@ -122,7 +102,6 @@ class AuthRepositoryRemote extends AuthRepository {
     return firebaseUser;
   }
 
-  @override
   Future<UserCredential> signIn(String email, String password) async {
     final firebaseUser = await _authService.signIn(email, password);
 
@@ -149,7 +128,6 @@ class AuthRepositoryRemote extends AuthRepository {
     _isAuthenticated = result != null;
   }
 
-  @override
   Future<void> signOut() async {
     await _sharedPreferencesService.removeToken();
     await _authService.signOut();

@@ -14,13 +14,11 @@ class LoginViewModel extends ChangeNotifier {
   bool _isLoading = false;
   final _formKey = GlobalKey<FormState>();
   String _errorMessage = "";
-  bool _isLogInSuccess = false;
 
   // ========== Public Getters ==========
   bool get isLoading => _isLoading;
   GlobalKey<FormState> get formKey => _formKey;
   String get errorMessage => _errorMessage;
-  bool get isLogInSuccess => _isLogInSuccess;
 
   // ========== Public Methods ==========
   Future<void> signIn(String email, String password) async {
@@ -39,7 +37,6 @@ class LoginViewModel extends ChangeNotifier {
 
       if (firebaseUser.user != null) {
         _formKey.currentState!.reset();
-        _isLogInSuccess = true;
       }
     } on FirebaseAuthException catch(e) {
       switch (e.code) {
@@ -66,7 +63,6 @@ class LoginViewModel extends ChangeNotifier {
   // ========== Private Methods ==========
   void _reset() {
     _errorMessage = "";
-    _isLogInSuccess = false;
     _isLoading = false;
     _formKey.currentState!.reset();
   }

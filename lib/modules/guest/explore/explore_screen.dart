@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../commons/widgets/custom_app_bar.dart';
 import 'explore_viewmodel.dart';
 
 // ========== Explore Screen Widget ==========
@@ -44,8 +45,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
-        return const Center(
-          child: Text("Explore Screen"),
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Explore'),
+          body: const Center(
+            child: Text("Explore Screen"),
+          ),
         );
       },
     );

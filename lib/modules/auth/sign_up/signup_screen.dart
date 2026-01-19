@@ -1,6 +1,6 @@
-import 'package:air_bnb_clone/commons/views/TextSnackBar.dart';
+import 'package:air_bnb_clone/commons/widgets/text_snack_bar.dart';
 import 'package:air_bnb_clone/modules/auth/sign_up/signup_viewmodel.dart';
-import 'package:air_bnb_clone/widgets/custom_text_field.dart';
+import 'package:air_bnb_clone/commons/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import '../../../commons/constants/app_constants.dart';
 
@@ -45,9 +45,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _onViewModelUpdate() {
     if (widget.viewModel.errorMessage.isNotEmpty) {
       TextSnackBar.show(context, widget.viewModel.errorMessage);
-    }
-    if (widget.viewModel.isSignUpSuccess) {
-      Navigator.pop(context);
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../commons/widgets/custom_app_bar.dart';
 import 'bookings_viewmodel.dart';
 
 // ========== Bookings Screen Widget ==========
@@ -44,8 +45,11 @@ class _BookingsPageState extends State<BookingsPage> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
-        return const Center(
-          child: Text("Bookings Screen"),
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Bookings'),
+          body: const Center(
+            child: Text("Bookings Screen"),
+          ),
         );
       },
     );

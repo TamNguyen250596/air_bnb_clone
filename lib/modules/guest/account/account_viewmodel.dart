@@ -3,8 +3,8 @@ import 'package:air_bnb_clone/commons/base/base_change_notifier.dart';
 import 'package:air_bnb_clone/commons/extensions/stream_extension.dart';
 import 'package:air_bnb_clone/data/repositories/user_repository.dart';
 import 'package:rxdart/rxdart.dart';
-import '../../../commons/constants/route_id.dart';
-import '../../../data/model/user.dart';
+import '../../../data/models/realm_models/user/user.dart';
+import '../../../routing/route_id.dart';
 import '../../../data/repositories/auth_repository.dart';
 
 // ========== Account ViewModel ==========
@@ -13,9 +13,11 @@ class AccountViewModel extends BaseChangeNotifier {
   // ========== Life cycle ==========
   AccountViewModel({
     required UserRepository userRepository,
-    required AuthRepository authRepository
+    required AuthRepository authRepository,
+    bool isInHostModel = false
   }) : _userRepository = userRepository,
-        _authRepository = authRepository {
+        _authRepository = authRepository,
+        _isInHostMode = isInHostModel {
     _observeData();
   }
 
@@ -30,6 +32,7 @@ class AccountViewModel extends BaseChangeNotifier {
   String _errorMessage = "";
   String? _routeId;
   String _businessButtonTitle = "";
+  bool _isInHostMode = false;
 
   // ========== Public Getters ==========
   String get avatarUrl => _avatarUrl;
@@ -50,10 +53,18 @@ class AccountViewModel extends BaseChangeNotifier {
 
       // Get a fresh, mutable user from Realm instead of using the frozen one
       final user = _user!;
+      if (!user.isValid) {
+        _setError("User not found");
+        return;
+      }
+      if (user.isHost == true && !_isInHostMode) {
+         _routeId = RouteConstant.bookingsPath;
+         return;
+      }
       final userId = _user!.id;
       bool isHost = (user.isHost == null || user.isHost == false) ? true : false;
       await _userRepository.updateUser(userId, {"is_host": isHost});
-      _routeId = isHost ? RouteId.bookingsScreen : RouteId.exploreScreen;
+      _routeId = isHost ? RouteConstant.bookingsPath : RouteConstant.explorePath;
 
     } catch (e) {
       _setError(e.toString());
@@ -97,10 +108,10 @@ class AccountViewModel extends BaseChangeNotifier {
   String _getBusinessButtonTitle(User user) {
     if (user.isHost == null) {
       return "Become a Host";
-    } else if (user.isHost == false) {
-      return "Show my Host Dashboard";
-    } else {
+    } else if (user.isHost == true && _isInHostMode) {
       return "Show my Guest Dashboard";
+    } else {
+      return "Show my Host Dashboard";
     }
   }
 

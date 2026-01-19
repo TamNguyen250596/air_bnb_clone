@@ -1,7 +1,8 @@
-import 'package:air_bnb_clone/commons/constants/route_id.dart';
+import 'package:air_bnb_clone/routing/route_id.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/place_repository.dart';
 import '../modules/auth/log_in/login_screen.dart';
 import '../modules/auth/log_in/login_viewmodel.dart';
 import '../modules/auth/sign_up/signup_screen.dart';
@@ -25,17 +26,21 @@ import '../modules/host/my_postings/my_postings_viewmodel.dart';
 import '../modules/host/earnings/earnings_screen.dart';
 import '../modules/host/earnings/earnings_viewmodel.dart';
 import 'package:go_router/go_router.dart';
+import '../modules/host/search_property_location/search_property_location_screen.dart';
+import '../modules/host/search_property_location/search_property_location_viewmodel.dart';
+import '../modules/host/update_posting/update_posting_screen.dart';
+import '../modules/host/update_posting/update_posting_viewmodel.dart';
 
 
 // ========== App Routes ==========
 GoRouter router(AuthRepository authRepository) => GoRouter(
-  initialLocation: RouteId.exploreScreen,
+  initialLocation: RouteConstant.explorePath,
   debugLogDiagnostics: true,
   redirect: _redirect,
   refreshListenable: authRepository,
   routes: [
     GoRoute(
-      path: RouteId.logInScreen,
+      path: RouteConstant.logInPath,
       builder: (context, state) {
         return LogInScreen(
           viewModel: LoginViewModel(
@@ -44,26 +49,28 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         );
       },
       routes: [
-        GoRoute(
-          path: RouteId.signUpScreen,
-            builder: (context, state) {
-              return SignUpScreen(
-                viewModel: SignupViewModel(
+        _route(
+          RouteConstant.signUp,
+          builder: (context, state) {
+            return SignUpScreen(
+              viewModel: SignupViewModel(
                   mediaRepository: context.read(),
                   authResultRepository: context.read()
-                ),
-              );
-            }
+              ),
+            );
+          }
         )
       ]
     ),
+
     ShellRoute(
       builder: (context, state, child) {
         return GuestHomeScreen(child: child);
       },
       routes: [
         GoRoute(
-          path: RouteId.exploreScreen,
+          path: RouteConstant.explorePath,
+          name: RouteConstant.explorePath,
           builder: (context, state) {
             return ExploreScreen(
               viewModel: ExploreViewModel(),
@@ -71,7 +78,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.savedScreen,
+          path: RouteConstant.savedPath,
+          name: RouteConstant.saved,
           builder: (context, state) {
             return SavedScreen(
               viewModel: SavedViewModel(),
@@ -79,7 +87,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.tripsScreen,
+          path: RouteConstant.tripsPath,
+          name: RouteConstant.trips,
           builder: (context, state) {
             return TripsScreen(
               viewModel: TripsViewModel(),
@@ -87,7 +96,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.inboxScreen,
+          path: RouteConstant.inboxPath,
+          name: RouteConstant.inbox,
           builder: (context, state) {
             return InboxScreen(
               viewModel: InboxViewModel(),
@@ -95,7 +105,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.accountScreen,
+          path: RouteConstant.accountPath,
+          name: RouteConstant.account,
           builder: (context, state) {
             return AccountScreen(
               viewModel: AccountViewModel(
@@ -107,13 +118,15 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         ),
       ],
     ),
+
     ShellRoute(
       builder: (context, state, child) {
         return HostHomeScreen(child: child);
       },
       routes: [
         GoRoute(
-          path: RouteId.bookingsScreen,
+          path: RouteConstant.bookingsPath,
+          name: RouteConstant.bookings,
           builder: (context, state) {
             return BookingsPage(
               viewModel: BookingsViewModel(),
@@ -121,15 +134,42 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.myPostingsScreen,
+          path: RouteConstant.myPostingsPath,
+          name: RouteConstant.myPostings,
           builder: (context, state) {
             return MyPostingsPage(
               viewModel: MyPostingsViewModel(),
             );
           },
+          routes: [
+            _route(
+              RouteConstant.updatePosting,
+              builder: (context, state) {
+                return UpdatePostingScreen(
+                  viewModel: UpdatePostingViewmodel(
+                    postingRepository: context.read(),
+                    mediaRepository: context.read(),
+                  ),
+                );
+              },
+              routes: [
+                _route(
+                  RouteConstant.searchPropertyLocation,
+                  builder: (context, state) {
+                    return SearchPropertyLocationScreen(
+                      viewModel: SearchPropertyLocationViewModel(
+                        placeRepository: context.read<PlaceRepository>(),
+                      ),
+                    );
+                  }
+                )
+              ]
+            )
+          ]
         ),
         GoRoute(
-          path: RouteId.hostInboxScreen,
+          path: RouteConstant.hostInboxPath,
+          name: RouteConstant.hostInbox,
           builder: (context, state) {
             return InboxScreen(
               viewModel: InboxViewModel(),
@@ -137,7 +177,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.earningsScreen,
+          path: RouteConstant.earningsPath,
+          name: RouteConstant.earnings,
           builder: (context, state) {
             return EarningsPage(
               viewModel: EarningsViewModel(),
@@ -145,12 +186,14 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           },
         ),
         GoRoute(
-          path: RouteId.hostAccountScreen,
+          path: RouteConstant.hostAccountPath,
+          name: RouteConstant.hostAccount,
           builder: (context, state) {
             return AccountScreen(
               viewModel: AccountViewModel(
                 userRepository: context.read(),
-                authRepository: context.read()
+                authRepository: context.read(),
+                isInHostModel: true,
               ),
             );
           },
@@ -160,15 +203,35 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
   ],
 );
 
+GoRoute _route(
+    String tag, {
+      GoRouterWidgetBuilder? builder,
+      GoRouterPageBuilder? pageBuilder,
+      List<RouteBase> routes = const [],
+      GlobalKey<NavigatorState>? parentNavigatorKey,
+      GoRouterRedirect? redirect,
+      ExitCallback? onExit,
+      bool caseSensitive = true,
+    }) {
+  return GoRoute(
+    path: tag,
+    name: tag,
+    builder: builder,
+    pageBuilder: pageBuilder,
+    parentNavigatorKey: parentNavigatorKey,
+    redirect: redirect,
+    onExit: onExit,
+    caseSensitive: caseSensitive,
+    routes: routes,
+  );
+}
+
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final loggedIn = await context.read<AuthRepository>().isAuthenticated;
-  final loggingIn = state.matchedLocation == RouteId.logInScreen;
-  if (!loggedIn) {
-    return RouteId.logInScreen;
+  if (state.matchedLocation != RouteConstant.logInPath &&
+      state.matchedLocation != RouteConstant.explorePath) {
+    return null;
   }
 
-  if (loggingIn) {
-    return RouteId.exploreScreen;
-  }
-  return null;
+  return loggedIn ? RouteConstant.explorePath : RouteConstant.logInPath;
 }

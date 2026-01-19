@@ -11,5 +11,5 @@ class BaseChangeNotifier extends ChangeNotifier {
   }
 
   // ========== Properties ==========
-  late CompositeSubscription subscriptions;
+  CompositeSubscription subscriptions = CompositeSubscription();
 }

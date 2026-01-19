@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../commons/widgets/custom_app_bar.dart';
 import 'earnings_viewmodel.dart';
 
 // ========== Earnings Screen Widget ==========
@@ -44,8 +45,11 @@ class _EarningsPageState extends State<EarningsPage> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
-        return const Center(
-          child: Text("Earnings Screen"),
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Earnings'),
+          body: const Center(
+            child: Text("Earnings Screen"),
+          ),
         );
       },
     );

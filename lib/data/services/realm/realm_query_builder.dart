@@ -5,6 +5,9 @@ class RealmQueryBuilder {
   final List<String> _queryValues = <String>[];
 
   RealmQueryBuilder equal(String field, dynamic value) {
+    if (_queryNumber > 0) {
+      _queryString += " AND ";
+    }
     _queryString += "$field == " "\$$_queryNumber";
     _queryValues.add(value);
     _queryNumber++;

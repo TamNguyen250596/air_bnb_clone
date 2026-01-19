@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../commons/widgets/custom_app_bar.dart';
 import 'inbox_viewmodel.dart';
 
 // ========== Inbox Screen Widget ==========
@@ -44,8 +45,11 @@ class _InboxScreenState extends State<InboxScreen> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, _) {
-        return const Center(
-          child: Text("Inbox Screen"),
+        return Scaffold(
+          appBar: const CustomAppBar(title: 'Inbox'),
+          body: const Center(
+            child: Text("Inbox Screen"),
+          ),
         );
       },
     );

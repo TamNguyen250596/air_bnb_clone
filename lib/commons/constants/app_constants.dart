@@ -8,4 +8,8 @@ class AppConstants {
   // Navigation Icon Colors
   static final Color selectedIcon = Colors.white;
   static final Color nonselectedIcon = Colors.white70;
+
+  // URL
+  static final String geoAPIfyDomain = "api.geoapify.com";
+  static final String geoAPIfyPath = '/v1/geocode/autocomplete';
 }

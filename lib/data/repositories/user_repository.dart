@@ -1,19 +1,12 @@
 import 'package:rxdart/rxdart.dart';
-import '../model/user.dart';
+import '../models/realm_models/user/user.dart';
 import '../services/firestore/firestore_service.dart';
 import '../services/realm/realm_service.dart';
 import '../services/realm/realm_query_builder.dart';
 
-abstract class UserRepository {
-  Future<User> createUser(User user);
-  Future<User> getUser(String id);
-  Stream<User> observeUser(String id);
-  Future<User> updateUser(String id, Map<String, dynamic> data);
-}
-
-class UserRepositoryRemote implements UserRepository {
+class UserRepository {
   // Init
-  UserRepositoryRemote({
+  UserRepository({
     required FireStoreService fireStoreService,
     required RealmService realmManager,
   }) : _fireStoreService = fireStoreService,
@@ -24,12 +17,10 @@ class UserRepositoryRemote implements UserRepository {
   final RealmService _realmManager;
 
   // Functions
-  @override
-  Future<User> createUser(User user) async {
+  Future<User> createUser(String id, Map<String, dynamic> data) async {
     try {
-      final data = user.toFirestore();
-      await _fireStoreService.createDoc<User>("users", user.id, data);
-      final createdUser = await _realmManager.getEntity<User>(user.id);
+      await _fireStoreService.createDoc<User>("users", id, data);
+      final createdUser = await _realmManager.getEntity<User>(id);
       if (createdUser == null) {
         throw Exception("Failed to create user in local storage");
       }
@@ -40,7 +31,6 @@ class UserRepositoryRemote implements UserRepository {
     }
   }
 
-  @override
   Future<User> getUser(String id) async {
     try {
       final doc = await _fireStoreService.getDoc<User>("users", id);
@@ -58,7 +48,6 @@ class UserRepositoryRemote implements UserRepository {
     }
   }
 
-  @override
   Stream<User> observeUser(String id) {
     try {
       // Set up Firestore listener (updates Realm automatically)
@@ -81,7 +70,6 @@ class UserRepositoryRemote implements UserRepository {
     }
   }
 
-  @override
   Future<User> updateUser(String id, Map<String, dynamic> data) async {
     try {
       await _fireStoreService.updateDoc<User>("users", id, data);

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../commons/constants/app_constants.dart';
-import '../../../commons/constants/route_id.dart';
-import '../../../commons/views/TextSnackBar.dart';
-import '../../../widgets/custom_text_field.dart';
+import '../../../routing/route_id.dart';
+import '../../../commons/widgets/text_snack_bar.dart';
+import '../../../commons/widgets/custom_text_field.dart';
 import 'login_viewmodel.dart';
 
 // ========== Login Screen Widget ==========
@@ -39,7 +40,7 @@ class _LogInScreenState extends State<LogInScreen> {
 
   // ========== Navigation Methods ==========
   void _goToSignUpScreen() {
-    Navigator.pushNamed(context, RouteId.signUpScreen);
+    context.pushNamed(RouteConstant.signUp);
   }
 
   // ========== Action Methods ==========
@@ -50,9 +51,6 @@ class _LogInScreenState extends State<LogInScreen> {
   void _onViewModelUpdate() {
     if (widget.viewModel.errorMessage.isNotEmpty) {
       TextSnackBar.show(context, widget.viewModel.errorMessage);
-    }
-    if (widget.viewModel.isLogInSuccess) {
-      Navigator.pushNamedAndRemoveUntil(context, RouteId.guestScreen, (route) => false,);
     }
   }
 
