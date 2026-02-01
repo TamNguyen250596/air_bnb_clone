@@ -17,35 +17,31 @@ class SignupViewModel extends ChangeNotifier {
   final MediaRepository _mediaRepository;
   final AuthRepository _authResultRepository;
   bool _isUploading = false;
-  final _formKey = GlobalKey<FormState>();
-  File? _imageFile;
   String _errorMessage = "";
+  File? _imageFile;
 
   // ========== Public Getters ==========
   bool get isUploading => _isUploading;
-  GlobalKey<FormState> get formKey => _formKey;
-  File? get imageFile => _imageFile;
   String get errorMessage => _errorMessage;
+  File? get imageFile => _imageFile;
 
   // ========== Public Methods ==========
   Future<void> chooseImage() async {
-    try {
-      _imageFile = await _mediaRepository.pickImageFromGallery(50);
-    } finally {
-      notifyListeners();
-    }
+    _imageFile = await _mediaRepository.pickImageFromGallery(50);
+    notifyListeners();
   }
 
-  Future<void> createAccount(
-    String email,
-    String password,
-    String firstName,
-    String lastName,
-    String city,
-    String country,
-    String bio
-  ) async {
-    if (_formKey.currentState?.validate() == false || _imageFile == null) {
+  Future<void> createAccount({
+    required GlobalKey<FormState> formKey,
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    required String city,
+    required String country,
+    required String bio,
+  }) async {
+    if (formKey.currentState?.validate() == false || _imageFile == null) {
       _errorMessage = "Please fill all fields and choose a profile picture.";
       notifyListeners();
       return;
@@ -55,9 +51,11 @@ class SignupViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _authResultRepository.createUser(email, password, firstName, lastName, city, country, bio, _imageFile);
+      final result = await _authResultRepository.createUser(
+          email, password, firstName, lastName, city, country, bio, _imageFile);
       if (result.user != null) {
-        _formKey.currentState!.reset();
+        formKey.currentState!.reset();
+        _imageFile = null;
       }
     } on FirebaseAuthException catch (e) {
       switch (e.code) {

@@ -47,7 +47,8 @@ List<SingleChildWidget> get providers {
           sharedPreferencesService: context.read(),
           userRepository: context.read(),
           mediaRepository: context.read(),
-          realmManager: context.read()
+          realmManager: context.read(),
+          firestoreService: context.read(),
       ),
     ),
   ];

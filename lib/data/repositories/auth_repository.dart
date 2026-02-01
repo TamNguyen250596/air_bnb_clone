@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import '../../commons/constants/app_constants.dart';
 import '../models/realm_models/user/user.dart';
 import '../models/realm_models/user/user_extensions.dart';
+import '../services/firestore/firestore_service.dart';
 import '../services/realm/realm_service.dart';
 import '../services/shared_preferences_service.dart';
 import 'media_repository.dart';
@@ -19,12 +20,14 @@ class AuthRepository extends ChangeNotifier {
     required UserRepository userRepository,
     required MediaRepository mediaRepository,
     required RealmService realmManager,
+    required FireStoreService firestoreService
   }):
         _authService = authService,
         _sharedPreferencesService = sharedPreferencesService,
         _userRepository = userRepository,
         _mediaRepository = mediaRepository,
-        _realmManager = realmManager
+        _realmManager = realmManager,
+        _firestoreService = firestoreService
   ;
 
   // ========== Properties ==========
@@ -33,6 +36,7 @@ class AuthRepository extends ChangeNotifier {
   final UserRepository _userRepository;
   final MediaRepository _mediaRepository;
   final RealmService _realmManager;
+  final FireStoreService _firestoreService;
 
   bool? _isAuthenticated;
   String? _userId;
@@ -131,7 +135,8 @@ class AuthRepository extends ChangeNotifier {
   Future<void> signOut() async {
     await _sharedPreferencesService.removeToken();
     await _authService.signOut();
-    _realmManager.deleteAll;
+    _firestoreService.removeAllListeners();
+    _realmManager.deleteAll();
     _isAuthenticated = false;
     _userId = null;
     notifyListeners();

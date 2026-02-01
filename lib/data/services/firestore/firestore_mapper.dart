@@ -16,9 +16,6 @@ class FirestoreMapper {
     if (factory == null) {
       throw Exception("No factory registered for type $T");
     }
-    if (map["id"] == null) {
-      map["id"] = map["id"];
-    }
     return factory(map) as T;
   }
 

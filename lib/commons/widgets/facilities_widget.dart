@@ -53,9 +53,10 @@ class _FacilitiesWidgetState extends State<FacilitiesWidget> {
               IconButton(
                 icon: const Icon(Icons.remove, color: Colors.white),
                 onPressed: () {
-                  _value = (_value! - 1).clamp(0, 9999);
-                  widget.onValueChanged(_value!);
-                  setState(() {});
+                  setState(() {
+                    _value = (_value! - 1).clamp(0, 9999);
+                    widget.onValueChanged(_value!);
+                  });
                 },
               ),
               Text(
@@ -69,9 +70,10 @@ class _FacilitiesWidgetState extends State<FacilitiesWidget> {
               IconButton(
                 icon: const Icon(Icons.add, color: Colors.white),
                 onPressed: () {
-                  _value = _value! + 1;
-                  widget.onValueChanged(_value!);
-                  setState(() {});
+                  setState(() {
+                    _value = _value! + 1;
+                    widget.onValueChanged(_value!);
+                  });
                 },
               ),
             ],

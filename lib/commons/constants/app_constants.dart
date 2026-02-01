@@ -4,6 +4,7 @@ class AppConstants {
 
   static final String appName = "AirBnb Clone";
   static final String userAvatar = "user_avatar";
+  static final String postingImage = "posting_image";
   
   // Navigation Icon Colors
   static final Color selectedIcon = Colors.white;

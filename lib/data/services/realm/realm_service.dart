@@ -1,8 +1,7 @@
+import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_query_builder.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_relationship_mapper.dart';
 import 'package:realm/realm.dart';
-
-import '../../models/realm_models/posting/posting.dart';
 import '../../models/realm_models/user/user.dart';
 
 class RealmService {
@@ -14,17 +13,34 @@ class RealmService {
 
   // ========== Create ==========
   Future<T> createFromEntity<T extends RealmObject>(T realmObject, {bool update = false}) async {
+    final entityId = realmObject.dynamic.get("id") as String;
+    if (entityId.isEmpty) {
+      throw Exception("Entity ID cannot be empty");
+    }
     final realm = Realm(config);
     return realm.write<T>(() {
-      final entityId = realmObject.dynamic.get("id") as String;
+      try {
+        final outgoingRelationships = RealmRelationshipRegistry.getOutgoingRelationships<T>();
+        for (final relationship in outgoingRelationships) {
+          final relatedEntity = relationship.getReferencedEntity(realm, realmObject);
+          realmObject.dynamic.set(relationship.relationshipProperty, relatedEntity);
+        }
+      } catch (e) {
+        print("Error linking forward relationships: $e");
+        rethrow;
+      }
+
       bool isNew =  realm.find<T>(entityId) == null;
       T entity = realm.add(realmObject, update: update);
 
       if (isNew) {
         try {
-          final inverseRelationships = RealmInverseRelationshipRegistry.getInverseRelationships<T>();
-          for (final relationship in inverseRelationships) {
-            _linkInverseRelationships(realm, relationship, entity, entityId);
+          final incomingRelationships = RealmRelationshipRegistry.getIncomingRelationships<T>();
+          for (final relationship in incomingRelationships) {
+            final relatedEntities = relationship.getReferencingEntities(realm, entityId);
+            for (final relatedEntity in relatedEntities) {
+              relatedEntity.dynamic.set(relationship.relationshipProperty, entity);
+            }
           }
         } catch (e) {
           print("Error linking inverse relationships: $e");
@@ -33,39 +49,6 @@ class RealmService {
       }
       return entity;
     });
-  }
-
-  void _linkInverseRelationships(
-    Realm realm,
-    InverseRelationship relationship,
-    RealmObject entity,
-    String entityId,
-  ) {
-    try {
-      final query = "${relationship.foreignKeyField} == \$0 AND ${relationship.relationshipProperty} == \$1";
-      _tryLinkWithType<Posting>(realm, query, entityId, relationship, entity);
-      
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  void _tryLinkWithType<R extends RealmObject>(
-    Realm realm,
-    String query,
-    String entityId,
-    InverseRelationship relationship,
-    RealmObject entity,
-  ) {
-    try {
-      final relatedEntities = realm.query<R>(query, [entityId, null]);
-      
-      for (final relatedEntity in relatedEntities) {
-        relatedEntity.dynamic.set(relationship.relationshipProperty, entity);
-      }
-    } catch (e) {
-      rethrow;
-    }
   }
 
   // ========== Read ==========

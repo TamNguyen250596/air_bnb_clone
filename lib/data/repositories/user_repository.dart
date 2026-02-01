@@ -1,6 +1,7 @@
 import 'package:rxdart/rxdart.dart';
 import '../models/realm_models/user/user.dart';
 import '../services/firestore/firestore_service.dart';
+import '../services/firestore/firestore_constant.dart';
 import '../services/realm/realm_service.dart';
 import '../services/realm/realm_query_builder.dart';
 
@@ -19,7 +20,7 @@ class UserRepository {
   // Functions
   Future<User> createUser(String id, Map<String, dynamic> data) async {
     try {
-      await _fireStoreService.createDoc<User>("users", id, data);
+      await _fireStoreService.createDoc<User>(FirestoreCollection.user, id, data);
       final createdUser = await _realmManager.getEntity<User>(id);
       if (createdUser == null) {
         throw Exception("Failed to create user in local storage");
@@ -33,7 +34,7 @@ class UserRepository {
 
   Future<User> getUser(String id) async {
     try {
-      final doc = await _fireStoreService.getDoc<User>("users", id);
+      final doc = await _fireStoreService.getDoc<User>(FirestoreCollection.user, id);
       if (!doc.exists) {
         throw Exception("User not found");
       }
@@ -51,7 +52,7 @@ class UserRepository {
   Stream<User> observeUser(String id) {
     try {
       // Set up Firestore listener (updates Realm automatically)
-      _fireStoreService.observeDoc<User>("users", id);
+      _fireStoreService.observeDoc<User>(FirestoreCollection.user, id);
 
       // Return Realm stream that will be updated by Firestore listener
       final localUserStream = _realmManager
@@ -60,7 +61,7 @@ class UserRepository {
           .map((event) => event.results.first);
 
       localUserStream.doOnCancel(() {
-        _fireStoreService.removeDocListener("users", id);
+        _fireStoreService.removeDocListener(FirestoreCollection.user, id);
       });
 
       return localUserStream;
@@ -72,7 +73,7 @@ class UserRepository {
 
   Future<User> updateUser(String id, Map<String, dynamic> data) async {
     try {
-      await _fireStoreService.updateDoc<User>("users", id, data);
+      await _fireStoreService.updateDoc<User>(FirestoreCollection.user, id, data);
       final updatedUser = await _realmManager.getEntity<User>(id);
       if (updatedUser == null) {
         throw Exception("Failed to retrieve updated user from local storage");

@@ -1,6 +1,7 @@
 import 'package:air_bnb_clone/routing/route_id.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import '../data/models/realm_models/posting/posting.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/place_repository.dart';
 import '../modules/auth/log_in/login_screen.dart';
@@ -42,21 +43,23 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     GoRoute(
       path: RouteConstant.logInPath,
       builder: (context, state) {
-        return LogInScreen(
-          viewModel: LoginViewModel(
+        return ChangeNotifierProvider(
+          create: (_) => LoginViewModel(
             authResultRepository: context.read()
           ),
+          child: const LogInScreen(),
         );
       },
       routes: [
         _route(
           RouteConstant.signUp,
           builder: (context, state) {
-            return SignUpScreen(
-              viewModel: SignupViewModel(
-                  mediaRepository: context.read(),
-                  authResultRepository: context.read()
+            return ChangeNotifierProvider(
+              create: (_) => SignupViewModel(
+                mediaRepository: context.read(),
+                authResultRepository: context.read()
               ),
+              child: const SignUpScreen(),
             );
           }
         )
@@ -72,8 +75,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.explorePath,
           name: RouteConstant.explorePath,
           builder: (context, state) {
-            return ExploreScreen(
-              viewModel: ExploreViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => ExploreViewModel(),
+              child: const ExploreScreen(),
             );
           },
         ),
@@ -81,8 +85,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.savedPath,
           name: RouteConstant.saved,
           builder: (context, state) {
-            return SavedScreen(
-              viewModel: SavedViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => SavedViewModel(),
+              child: const SavedScreen(),
             );
           },
         ),
@@ -90,8 +95,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.tripsPath,
           name: RouteConstant.trips,
           builder: (context, state) {
-            return TripsScreen(
-              viewModel: TripsViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => TripsViewModel(),
+              child: const TripsScreen(),
             );
           },
         ),
@@ -99,8 +105,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.inboxPath,
           name: RouteConstant.inbox,
           builder: (context, state) {
-            return InboxScreen(
-              viewModel: InboxViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => InboxViewModel(),
+              child: const InboxScreen(),
             );
           },
         ),
@@ -108,11 +115,12 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.accountPath,
           name: RouteConstant.account,
           builder: (context, state) {
-            return AccountScreen(
-              viewModel: AccountViewModel(
+            return ChangeNotifierProvider(
+              create: (_) => AccountViewModel(
                 userRepository: context.read(),
                 authRepository: context.read(),
               ),
+              child: const AccountScreen(),
             );
           },
         ),
@@ -128,8 +136,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.bookingsPath,
           name: RouteConstant.bookings,
           builder: (context, state) {
-            return BookingsPage(
-              viewModel: BookingsViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => BookingsViewModel(),
+              child: const BookingsPage(),
             );
           },
         ),
@@ -137,29 +146,39 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.myPostingsPath,
           name: RouteConstant.myPostings,
           builder: (context, state) {
-            return MyPostingsPage(
-              viewModel: MyPostingsViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => MyPostingsViewModel(
+                postingRepository: context.read(),
+                authRepository: context.read(),
+              ),
+              child: const MyPostingsPage(),
             );
           },
           routes: [
             _route(
               RouteConstant.updatePosting,
               builder: (context, state) {
-                return UpdatePostingScreen(
-                  viewModel: UpdatePostingViewmodel(
+                final posting = state.extra as Posting?;
+
+                return ChangeNotifierProvider(
+                  create: (_) => UpdatePostingViewModel(
                     postingRepository: context.read(),
                     mediaRepository: context.read(),
+                    authRepository: context.read(),
+                    posting: posting,
                   ),
+                  child: const UpdatePostingScreen(),
                 );
               },
               routes: [
                 _route(
                   RouteConstant.searchPropertyLocation,
                   builder: (context, state) {
-                    return SearchPropertyLocationScreen(
-                      viewModel: SearchPropertyLocationViewModel(
+                    return ChangeNotifierProvider(
+                      create: (_) => SearchPropertyLocationViewModel(
                         placeRepository: context.read<PlaceRepository>(),
                       ),
+                      child: const SearchPropertyLocationScreen(),
                     );
                   }
                 )
@@ -171,8 +190,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.hostInboxPath,
           name: RouteConstant.hostInbox,
           builder: (context, state) {
-            return InboxScreen(
-              viewModel: InboxViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => InboxViewModel(),
+              child: const InboxScreen(),
             );
           },
         ),
@@ -180,8 +200,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.earningsPath,
           name: RouteConstant.earnings,
           builder: (context, state) {
-            return EarningsPage(
-              viewModel: EarningsViewModel(),
+            return ChangeNotifierProvider(
+              create: (_) => EarningsViewModel(),
+              child: const EarningsPage(),
             );
           },
         ),
@@ -189,12 +210,13 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.hostAccountPath,
           name: RouteConstant.hostAccount,
           builder: (context, state) {
-            return AccountScreen(
-              viewModel: AccountViewModel(
+            return ChangeNotifierProvider(
+              create: (_) => AccountViewModel(
                 userRepository: context.read(),
                 authRepository: context.read(),
                 isInHostModel: true,
               ),
+              child: const AccountScreen(),
             );
           },
         ),
@@ -228,10 +250,17 @@ GoRoute _route(
 
 Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final loggedIn = await context.read<AuthRepository>().isAuthenticated;
-  if (state.matchedLocation != RouteConstant.logInPath &&
-      state.matchedLocation != RouteConstant.explorePath) {
-    return null;
+  final loggingIn = state.matchedLocation == RouteConstant.logInPath;
+  if (!loggedIn) {
+    return RouteConstant.logInPath;
   }
 
-  return loggedIn ? RouteConstant.explorePath : RouteConstant.logInPath;
+  // if the user is logged in but still on the login page, send them to
+  // the home page
+  if (loggingIn) {
+    return RouteConstant.explorePath;
+  }
+
+  // no need to redirect at all
+  return null;
 }

@@ -1,16 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
+import '../../../commons/widgets/text_snack_bar.dart';
 import 'account_viewmodel.dart';
 
 // ========== Account Screen Widget ==========
 class AccountScreen extends StatefulWidget {
   // ========== Constructor ==========
-  const AccountScreen({super.key, required this.viewModel});
-
-  // ========== Properties ==========
-  final AccountViewModel viewModel;
+  const AccountScreen({super.key});
 
   // ========== Lifecycle ==========
   @override
@@ -19,56 +18,100 @@ class AccountScreen extends StatefulWidget {
 
 // ========== Account Screen State ==========
 class _AccountScreenState extends State<AccountScreen> {
-  // ========== Lifecycle ==========
-  @override
-  void initState() {
-    super.initState();
-    widget.viewModel.addListener(_onViewModelUpdate);
-  }
-
-  @override
-  void dispose() {
-    widget.viewModel.removeListener(_onViewModelUpdate);
-    super.dispose();
-  }
 
   // ========== Action Methods ==========
-  void _onViewModelUpdate() {
-    if (widget.viewModel.errorMessage.isNotEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(widget.viewModel.errorMessage)));
+  Future<void> _changeHost() async {
+    final vm = context.read<AccountViewModel>();
+    await vm.changeHost();
+    if (!mounted) return;
+    if (vm.errorMessage.isNotEmpty) {
+      TextSnackBar.show(context, vm.errorMessage);
+    } else if (vm.routeId != null) {
+      context.go(vm.routeId!);
     }
-    if (widget.viewModel.routeId != null) {
-      context.go(widget.viewModel.routeId!);
+  }
+
+  Future<void> _signOut() async {
+    final vm = context.read<AccountViewModel>();
+    await vm.signOut();
+    if (!mounted) return;
+    if (vm.errorMessage.isNotEmpty) {
+      TextSnackBar.show(context, vm.errorMessage);
     }
   }
 
   // ========== Build Method ==========
   Widget _avatar() {
-    return GestureDetector(
-      onTap: () {},
-      child: CachedNetworkImage(
-        imageUrl: widget.viewModel.avatarUrl,
-        placeholder: (context, url) => CircularProgressIndicator(),
-        imageBuilder: (context, imageProvider) => Container(
-          height: 180,
-          width: 180,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(90)),
-            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+    return Consumer<AccountViewModel>(
+      builder: (context, viewModel, child) {
+        return GestureDetector(
+          onTap: () {},
+          child: CachedNetworkImage(
+            imageUrl: viewModel.avatarUrl,
+            placeholder: (context, url) => CircularProgressIndicator(),
+            imageBuilder: (context, imageProvider) => Container(
+              height: 180,
+              width: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(90)),
+                image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+              ),
+            ),
+            errorWidget: (context, url, error) => CircleAvatar(
+              backgroundColor: Colors.grey,
+              radius: MediaQuery.of(context).size.width / 4.5,
+              child: Icon(
+                Icons.person,
+                size: MediaQuery.of(context).size.width / 4.5,
+                color: Colors.white,
+              ),
+            ),
           ),
-        ),
-        errorWidget: (context, url, error) => CircleAvatar(
-          backgroundColor: Colors.grey,
-          radius: MediaQuery.of(context).size.width / 4.5,
-          child: Icon(
-            Icons.person,
-            size: MediaQuery.of(context).size.width / 4.5,
-            color: Colors.white,
+        );
+      },
+    );
+  }
+
+  Widget _fullName() {
+    return Consumer<AccountViewModel>(
+      builder: (context, viewModel, child) {
+        return Text(
+          viewModel.fullName,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
-        ),
-      ),
+        );
+      },
+    );
+  }
+
+  Widget _email() {
+    return Consumer<AccountViewModel>(
+      builder: (context, viewModel, child) {
+        return Text(
+          viewModel.email,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _businessButtonTitle() {
+    return Consumer<AccountViewModel>(
+      builder: (context, viewModel, child) {
+        return _buildActionTitle(
+          context,
+          viewModel.businessButtonTitle,
+          Icons.add_business,
+          _changeHost,
+        );
+      },
     );
   }
 
@@ -101,73 +144,45 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.viewModel,
-      builder: (context, _) {
-        return Scaffold(
-          appBar: const CustomAppBar(title: 'Profile'),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        _avatar(),
-                        const SizedBox(height: 16),
-
-                        Text(
-                          widget.viewModel.fullName,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        Text(
-                          widget.viewModel.email,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildActionTitle(
-                    context,
-                    "Personal Information",
-                    Icons.person_pin,
-                    () {},
-                  ),
-
-                  const SizedBox(height: 16),
-                  _buildActionTitle(
-                    context,
-                    widget.viewModel.businessButtonTitle,
-                    Icons.add_business,
-                    widget.viewModel.changeHost,
-                  ),
-
-                  const SizedBox(height: 16),
-                  _buildActionTitle(
-                    context,
-                    "Log Out",
-                    Icons.login_outlined,
-                    widget.viewModel.signOut,
-                  ),
-                ],
+    return Scaffold(
+      appBar: const CustomAppBar(title: 'Profile'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Center(
+                child: Column(
+                  children: [
+                    _avatar(),
+                    const SizedBox(height: 16),
+                    _fullName(),
+                    const SizedBox(height: 4),
+                    _email(),
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              _buildActionTitle(
+                context,
+                "Personal Information",
+                Icons.person_pin,
+                () {},
+              ),
+              const SizedBox(height: 16),
+              _businessButtonTitle(),
+
+              const SizedBox(height: 16),
+              _buildActionTitle(
+                context,
+                "Log Out",
+                Icons.login_outlined,
+                _signOut,
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

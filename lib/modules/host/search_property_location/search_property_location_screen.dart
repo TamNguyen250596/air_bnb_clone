@@ -3,16 +3,14 @@ import 'package:air_bnb_clone/commons/widgets/place_item.dart';
 import 'package:air_bnb_clone/modules/host/search_property_location/search_property_location_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../data/models/place/place.dart';
 
 class SearchPropertyLocationScreen extends StatefulWidget {
 
   // Init
-  const SearchPropertyLocationScreen({super.key, required this.viewModel});
-
-  // Properties
-  final SearchPropertyLocationViewModel viewModel;
+  const SearchPropertyLocationScreen({super.key});
 
   @override
   State<SearchPropertyLocationScreen> createState() => _SearchPropertyLocationScreenState();
@@ -52,7 +50,7 @@ class _SearchPropertyLocationScreenState extends State<SearchPropertyLocationScr
                 style: const TextStyle(color: Colors.white),
                 cursorColor: Colors.white,
                 onChanged: (inputText) {
-                  widget.viewModel.setSearchTxt(inputText);
+                  context.read<SearchPropertyLocationViewModel>().setSearchTxt(inputText);
                 },
                 decoration: const InputDecoration(
                   hintText: "Type here...",
@@ -73,42 +71,42 @@ class _SearchPropertyLocationScreenState extends State<SearchPropertyLocationScr
   }
 
   Widget _list() {
-    if (widget.viewModel.places.isNotEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        child: ListView.separated(
-          padding: EdgeInsets.zero,
-          itemBuilder: (context, index) {
-            return Card(
-              color: Colors.grey[850],
-              elevation: 3,
-              child: PlaceItem(
-                place: widget.viewModel.places[index],
-                onPress: () {
-                  popBack(widget.viewModel.places[index]);
-                },
-              ),
-            );
-          },
-          separatorBuilder: (context, index) =>
-          const SizedBox(height: 2),
-          itemCount: widget.viewModel.places.length,
-          shrinkWrap: true,
-          physics: const ClampingScrollPhysics(),
-        ),
-      );
-    } else {
-      return Container();
-    }
+    return Consumer<SearchPropertyLocationViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.places.isNotEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: ListView.separated(
+              padding: EdgeInsets.zero,
+              itemBuilder: (context, index) {
+                return Card(
+                  color: Colors.grey[850],
+                  elevation: 3,
+                  child: PlaceItem(
+                    place: viewModel.places[index],
+                    onPress: () {
+                      popBack(viewModel.places[index]);
+                    },
+                  ),
+                );
+              },
+              separatorBuilder: (context, index) =>
+              const SizedBox(height: 2),
+              itemCount: viewModel.places.length,
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+            ),
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: widget.viewModel,
-      builder: (context, _) {
-        return Scaffold(
+    return Scaffold(
           appBar: CustomAppBar(title: "Please write address"),
           body: Column(
             children: [
@@ -134,7 +132,5 @@ class _SearchPropertyLocationScreenState extends State<SearchPropertyLocationScr
             ],
           ),
         );
-      },
-    );
   }
 }

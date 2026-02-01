@@ -12,18 +12,16 @@ class LoginViewModel extends ChangeNotifier {
   // ========== Private Properties ==========
   final AuthRepository _authResultRepository;
   bool _isLoading = false;
-  final _formKey = GlobalKey<FormState>();
   String _errorMessage = "";
 
   // ========== Public Getters ==========
   bool get isLoading => _isLoading;
-  GlobalKey<FormState> get formKey => _formKey;
   String get errorMessage => _errorMessage;
 
   // ========== Public Methods ==========
-  Future<void> signIn(String email, String password) async {
-    _reset();
-    if (_formKey.currentState?.validate() == false) {
+  Future<void> signIn( GlobalKey<FormState> formKey, String email, String password) async {
+    _errorMessage = "";
+    if (formKey.currentState?.validate() == false) {
       _errorMessage = "Please fill all fields.";
       notifyListeners();
       return;
@@ -36,7 +34,7 @@ class LoginViewModel extends ChangeNotifier {
       final firebaseUser = await _authResultRepository.signIn(email, password);
 
       if (firebaseUser.user != null) {
-        _formKey.currentState!.reset();
+        formKey.currentState!.reset();
       }
     } on FirebaseAuthException catch(e) {
       switch (e.code) {
@@ -50,7 +48,7 @@ class LoginViewModel extends ChangeNotifier {
           _errorMessage = "Password is too weak. Please use a stronger one. Use at-least 6 characters";
           break;
         default:
-          _errorMessage = "Sign up failed. Please try again later.";
+          _errorMessage = "Sign in failed. Please try again later.";
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -58,12 +56,5 @@ class LoginViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  // ========== Private Methods ==========
-  void _reset() {
-    _errorMessage = "";
-    _isLoading = false;
-    _formKey.currentState!.reset();
   }
 }

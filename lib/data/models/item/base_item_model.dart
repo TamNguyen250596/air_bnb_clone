@@ -6,11 +6,12 @@ class BaseItemModel {
   late final String id;
   String tag;
   IconData? imageData;
-  String? imageUrl;
-  String? title;
-  String? des;
+  String imageUrl;
+  String title;
+  String des;
   dynamic object;
 
   // Constructor
-  BaseItemModel(this.id, {this.tag = "", this.imageData, this.imageUrl, this.title, this.des, this.object});
+  BaseItemModel(this.id,
+      {this.tag = "", this.imageData, this.imageUrl = "", this.title = "", this.des = "", this.object});
 }

@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:realm/realm.dart';
 import 'firestore_mapper.dart';
+import 'firestore_query_builder.dart';
 
 class FireStoreService {
 
@@ -15,18 +15,29 @@ class FireStoreService {
   // Properties
   final RealmService _realmManager;
   final Map<DocumentReference, StreamSubscription<DocumentSnapshot>> _observedDocuments = {};
+  final Map<Query<Map<String, dynamic>>, StreamSubscription<QuerySnapshot>> _observedCollections = {};
 
-  Future<void> createDoc<T extends RealmObject>(String collection, String id, Map<String, dynamic> data) async {
+  // Create
+  Future<String> createDoc<T extends RealmObject>(String collection, String? id, Map<String, dynamic> data) async {
     try {
-      await FirebaseFirestore.instance.doc("$collection/$id").set(data);
+      if (id == null || id.isEmpty) {
+        final docRef = await FirebaseFirestore.instance.collection(collection).doc();
+        data["id"] = docRef.id;
+        id = docRef.id;
+        await docRef.set(data);
+      } else {
+        await FirebaseFirestore.instance.doc("$collection/$id").set(data);
+      }
       final realmObject = FirestoreMapper.fromMap<T>(data);
       _realmManager.createFromEntity(realmObject, update: true);
+      return id;
     } catch(e) {
       print(e);
       rethrow;
     }
   }
 
+  // Read
   Future<DocumentSnapshot> getDoc<T extends RealmObject>(String collection, String id) async {
     final snapshot = await FirebaseFirestore.instance.doc("$collection/$id").get();
     if (snapshot.exists) {
@@ -51,6 +62,34 @@ class FireStoreService {
     });
   }
 
+  void observeCollection<T extends RealmObject>(FirestoreQueryBuilder builder) {
+    final stream = builder.build(FirebaseFirestore.instance);
+    if (_observedCollections[stream] != null) return;
+    final subscription = stream.snapshots();
+
+    _observedCollections[stream] = subscription.listen((event) {
+      for (var change in event.docChanges) {
+        switch (change.type) {
+          case DocumentChangeType.added:
+          case DocumentChangeType.modified:
+            if (change.doc.exists && change.doc.data() != null) {
+              final realmObject = FirestoreMapper.fromMap<T>(change.doc.data()!);
+              _realmManager.createFromEntity(
+                realmObject,
+                update: true,
+              );
+            }
+            break;
+
+          case DocumentChangeType.removed:
+            _realmManager.deleteEntity<T>(change.doc.id);
+            break;
+        }
+      }
+    });
+  }
+
+  // Update
   Future<void> updateDoc<T extends RealmObject>(String collection, String id, Map<String, dynamic> data) async {
     try {
       await FirebaseFirestore.instance.doc("$collection/$id").update(data);
@@ -62,10 +101,25 @@ class FireStoreService {
     }
   }
 
+  // Functions
   void removeDocListener(String collection, String id) {
     final doc = FirebaseFirestore.instance.doc("$collection/$id");
 
     _observedDocuments[doc]?.cancel();
     _observedDocuments.remove(doc);
+  }
+
+  void removeCollectionListener(FirestoreQueryBuilder builder) {
+    final stream = builder.build(FirebaseFirestore.instance);
+
+    _observedCollections[stream]?.cancel();
+    _observedCollections.remove(stream);
+  }
+
+  void removeAllListeners() {
+    _observedDocuments.forEach((key, value) => value.cancel());
+    _observedDocuments.clear();
+    _observedCollections.forEach((key, value) => value.cancel());
+    _observedCollections.clear();
   }
 }

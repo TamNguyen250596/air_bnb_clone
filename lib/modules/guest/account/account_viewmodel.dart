@@ -22,8 +22,8 @@ class AccountViewModel extends BaseChangeNotifier {
   }
 
   // ========== Private Properties ==========
-  UserRepository _userRepository;
-  AuthRepository _authRepository;
+  final UserRepository _userRepository;
+  final AuthRepository _authRepository;
   User? _user;
   String _avatarUrl = "";
   String _fullName = "";
@@ -32,7 +32,7 @@ class AccountViewModel extends BaseChangeNotifier {
   String _errorMessage = "";
   String? _routeId;
   String _businessButtonTitle = "";
-  bool _isInHostMode = false;
+  final bool _isInHostMode;
 
   // ========== Public Getters ==========
   String get avatarUrl => _avatarUrl;
@@ -45,38 +45,57 @@ class AccountViewModel extends BaseChangeNotifier {
 
   // ========== Public Methods ==========
   Future<void> changeHost() async {
+    _errorMessage = "";
+    _setLoading(true);
+    
     try {
       if (_user == null) {
-        _setError("User not found");
+        _errorMessage = "User information not available. Please try again.";
         return;
       }
 
       // Get a fresh, mutable user from Realm instead of using the frozen one
       final user = _user!;
       if (!user.isValid) {
-        _setError("User not found");
+        _errorMessage = "User data is invalid. Please try again.";
         return;
       }
+      
       if (user.isHost == true && !_isInHostMode) {
          _routeId = RouteConstant.bookingsPath;
          return;
       }
+      
       final userId = _user!.id;
       bool isHost = (user.isHost == null || user.isHost == false) ? true : false;
-      await _userRepository.updateUser(userId, {"is_host": isHost});
-      _routeId = isHost ? RouteConstant.bookingsPath : RouteConstant.explorePath;
+      
+      try {
+        await _userRepository.updateUser(userId, {"is_host": isHost});
+        _routeId = isHost ? RouteConstant.bookingsPath : RouteConstant.explorePath;
+        _errorMessage = ""; // Clear error on success
+      } catch (e) {
+        _errorMessage = "Failed to update host status. Please try again.";
+      }
 
-    } catch (e) {
-      _setError(e.toString());
     } finally {
+      _setLoading(false);
       notifyListeners();
     }
   }
 
   Future<void> signOut() async {
+    _errorMessage = "";
     _setLoading(true);
-    await _authRepository.signOut();
-    _setLoading(false);
+    
+    try {
+      await _authRepository.signOut();
+      _errorMessage = ""; // Clear error on success
+    } catch (e) {
+      _errorMessage = "Failed to sign out. Please try again.";
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
   }
 
   // ========== Private Methods ==========
@@ -84,7 +103,6 @@ class AccountViewModel extends BaseChangeNotifier {
     String? userId = await _authRepository.userId;
 
     if (userId == null) {
-      _setError("User not found");
       return;
     }
 
@@ -117,11 +135,6 @@ class AccountViewModel extends BaseChangeNotifier {
 
   void _setLoading(bool value) {
     _isLoading = value;
-    notifyListeners();
-  }
-
-  void _setError(String message) {
-    _errorMessage = message;
     notifyListeners();
   }
 }
