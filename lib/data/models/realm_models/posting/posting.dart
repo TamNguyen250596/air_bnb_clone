@@ -4,7 +4,6 @@ part 'posting.realm.dart';
 
 @RealmModel()
 class _Posting {
-  // ========== Properties ==========
   @PrimaryKey()
   late String id;
 

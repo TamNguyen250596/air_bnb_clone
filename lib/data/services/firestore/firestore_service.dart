@@ -47,6 +47,15 @@ class FireStoreService {
     return snapshot;
   }
 
+  Future<List<QueryDocumentSnapshot<Object>>> getCollection<T extends RealmObject>(FirestoreQueryBuilder builder) async {
+    final snapshot = await builder.build(FirebaseFirestore.instance).get();
+    return snapshot.docs.map((doc) {
+      final realmObject = FirestoreMapper.fromDocumentSnapshot<T>(doc);
+      _realmManager.createFromEntity(realmObject, update: true);
+      return doc;
+    }).toList();
+    }
+
   void observeDoc<T extends RealmObject>(String collection, String id) {
     final doc = FirebaseFirestore.instance.doc("$collection/$id");
     if (_observedDocuments[doc] != null) return;

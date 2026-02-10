@@ -19,6 +19,8 @@ import '../modules/guest/inbox/inbox_screen.dart';
 import '../modules/guest/inbox/inbox_viewmodel.dart';
 import '../modules/guest/account/account_screen.dart';
 import '../modules/guest/account/account_viewmodel.dart';
+import '../modules/guest/view_posting/view_posting_screen.dart';
+import '../modules/guest/view_posting/view_posting_viewmodel.dart';
 import '../modules/host/host_home_screen.dart';
 import '../modules/host/bookings/bookings_screen.dart';
 import '../modules/host/bookings/bookings_viewmodel.dart';
@@ -76,10 +78,25 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.explorePath,
           builder: (context, state) {
             return ChangeNotifierProvider(
-              create: (_) => ExploreViewModel(),
+              create: (_) => ExploreViewModel(
+                postingRepository: context.read()
+              ),
               child: const ExploreScreen(),
             );
           },
+          routes: [
+            _route(
+              RouteConstant.viewPosting,
+              builder: (context, state) {
+                return ChangeNotifierProvider(
+                  create: (_) => ViewPostingViewModel(
+                    state.extra as Posting
+                  ),
+                  child: const ViewPostingScreen(),
+                );
+              }
+            )
+          ]
         ),
         GoRoute(
           path: RouteConstant.savedPath,

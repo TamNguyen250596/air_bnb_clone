@@ -1,5 +1,6 @@
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:realm_dart/src/results.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/realm_models/posting/posting.dart';
@@ -36,6 +37,75 @@ class PostingRepository {
   }
 
   // Read
+  Future<RealmResults<Posting>> getPostingsForExplore(String searchTxt) async {
+    try {
+      Filter? filter;
+      if (searchTxt.isNotEmpty) {
+        filter = Filter.or(
+          Filter('name', isGreaterThanOrEqualTo: searchTxt),
+          Filter('name', isLessThanOrEqualTo: '$searchTxt\uf8ff'),
+          Filter('address', isGreaterThanOrEqualTo: searchTxt),
+          Filter('address', isLessThanOrEqualTo: '$searchTxt\uf8ff'),
+          Filter('type', isGreaterThanOrEqualTo: searchTxt),
+          Filter('type', isLessThanOrEqualTo: '$searchTxt\uf8ff'),
+        );
+      }
+
+      final query = FirestoreQueryBuilder(FirestoreCollection.posting);
+      if (filter != null) {
+        query.filter(filter);
+      }
+      await _firestoreService.getCollection<Posting>(query);
+      final realmQuery = RealmQueryBuilder();
+      if (searchTxt.isNotEmpty) {
+        realmQuery.orContains(['name', 'address', 'type'], searchTxt);
+      }
+      return await _realmManager.getEntities<Posting>(realmQuery);
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  Future<RealmResults<Posting>> getPostings(String hostId, String searchTxt) async {
+    try {
+      Filter? filter;
+      if (searchTxt.isNotEmpty) {
+        filter = Filter.or(
+          //  Search by name
+          Filter('name', isGreaterThanOrEqualTo: searchTxt),
+          Filter('name', isLessThanOrEqualTo: '$searchTxt\uf8ff'),
+
+          //  Search by address
+          Filter('address', isGreaterThanOrEqualTo: searchTxt),
+          Filter('address', isLessThanOrEqualTo: '$searchTxt\uf8ff'),
+
+          //  Search by type
+          Filter('type', isGreaterThanOrEqualTo: searchTxt),
+          Filter('type', isLessThanOrEqualTo: '$searchTxt\uf8ff'),
+        );
+      }
+
+      FirestoreQueryBuilder query = FirestoreQueryBuilder(FirestoreCollection.posting)
+          .equalTo("host_id", hostId);
+      if (filter != null) {
+        query.filter(filter);
+      }
+      await _firestoreService.getCollection(query);
+      final entities = await _realmManager.getEntities<Posting>(
+          RealmQueryBuilder()
+              .equal("hostId", hostId)
+              .like("name", searchTxt)
+              .like("address", searchTxt)
+              .like("type", searchTxt)
+      );
+      return entities;
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
    Stream<RealmResultsChanges<Posting>> observePostings(String hostId) {
     try {
       _firestoreService.observeCollection<Posting>(
