@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:air_bnb_clone/commons/base/base_change_notifier.dart';
 import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
 import 'package:flutter/material.dart';
-
+import 'package:latlong2/latlong.dart';
 import '../../../data/models/item/base_item_model.dart';
 
 class ViewPostingViewModel extends BaseChangeNotifier {
@@ -13,7 +15,7 @@ class ViewPostingViewModel extends BaseChangeNotifier {
 
   // Private Properties
   final Posting _posting;
-  String _imageUrl = "";
+  List<String> _displayImages = [];
   String _title = "";
   String _description = "";
   List<BaseItemModel> _postingInfoTiles = [];
@@ -21,10 +23,13 @@ class ViewPostingViewModel extends BaseChangeNotifier {
   String _address = "";
   String _hostImage = "";
   String _hostName = "";
+  LatLng _propertyLatLong = LatLng(37.42796133580664, -122.085749655962);
+  String _displayAddress = "";
+  Timer? _displayAddressTimer;
 
   // Public Properties
   Posting get posting => _posting;
-  String get imageUrl => _imageUrl;
+  List<String> get displayImages => _displayImages;
   String get title => _title;
   String get description => _description;
   List<BaseItemModel> get postingInfoTiles => _postingInfoTiles;
@@ -32,8 +37,29 @@ class ViewPostingViewModel extends BaseChangeNotifier {
   String get address => _address;
   String get hostImage => _hostImage;
   String get hostName => _hostName;
+  LatLng get propertyLatLong => _propertyLatLong;
+  String get displayAddress => _displayAddress;
+
+  // Life cycle
+  @override
+  void dispose() {
+    _displayAddressTimer?.cancel();
+    super.dispose();
+  }
 
   // Public Functions
+  void selectedMarker() {
+    if (!_posting.isValid) {
+      return;
+    }
+    _displayAddressTimer?.cancel();
+    _displayAddress = _posting.address ?? "";
+    notifyListeners();
+    _displayAddressTimer = Timer(const Duration(seconds: 5), () {
+      _displayAddress = "";
+      notifyListeners();
+    });
+  }
 
   // Private Functions
   bool _isPostingValid() =>
@@ -83,11 +109,12 @@ class ViewPostingViewModel extends BaseChangeNotifier {
       return;
     }
 
-    _imageUrl = _posting.images.isNotEmpty ? _posting.images[0] : "";
+    _displayImages = _posting.images;
     _title = _posting.name ?? "";
     _description = _posting.description ?? "";
     _amenities = _posting.amenities.toList();
     _address = _getFullAddress();
+    _propertyLatLong = LatLng(_posting.lat, _posting.lon);
     _hostImage = _posting.host?.imageUrl ?? "";
     _hostName = _posting.host?.fullName ??
         '${_posting.host?.firstName ?? ""} ${_posting.host?.lastName ?? ""}'

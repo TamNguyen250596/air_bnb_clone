@@ -17,6 +17,8 @@ class _Posting {
   double? rating;
   String? hostId;
   $User? host;
+  double lat = 0.0;
+  double lon = 0.0;
   late List<String> images;
   late List<String> amenities;
   late Map<String, int> beds;

@@ -5,14 +5,17 @@ import 'package:realm/realm.dart';
 import '../../models/realm_models/user/user.dart';
 
 class RealmService {
-
-  var config = Configuration.local([
-    User.schema,
-    Posting.schema
-  ]);
+  var config = Configuration.local(
+    [User.schema, Posting.schema],
+    schemaVersion: 2,
+    shouldDeleteIfMigrationNeeded: true,
+  );
 
   // ========== Create ==========
-  Future<T> createFromEntity<T extends RealmObject>(T realmObject, {bool update = false}) async {
+  Future<T> createFromEntity<T extends RealmObject>(
+    T realmObject, {
+    bool update = false,
+  }) async {
     final entityId = realmObject.dynamic.get("id") as String;
     if (entityId.isEmpty) {
       throw Exception("Entity ID cannot be empty");
@@ -20,26 +23,40 @@ class RealmService {
     final realm = Realm(config);
     return realm.write<T>(() {
       try {
-        final outgoingRelationships = RealmRelationshipRegistry.getOutgoingRelationships<T>();
+        final outgoingRelationships =
+            RealmRelationshipRegistry.getOutgoingRelationships<T>();
         for (final relationship in outgoingRelationships) {
-          final relatedEntity = relationship.getReferencedEntity(realm, realmObject);
-          realmObject.dynamic.set(relationship.relationshipProperty, relatedEntity);
+          final relatedEntity = relationship.getReferencedEntity(
+            realm,
+            realmObject,
+          );
+          realmObject.dynamic.set(
+            relationship.relationshipProperty,
+            relatedEntity,
+          );
         }
       } catch (e) {
         print("Error linking forward relationships: $e");
         rethrow;
       }
 
-      bool isNew =  realm.find<T>(entityId) == null;
+      bool isNew = realm.find<T>(entityId) == null;
       T entity = realm.add(realmObject, update: update);
 
       if (isNew) {
         try {
-          final incomingRelationships = RealmRelationshipRegistry.getIncomingRelationships<T>();
+          final incomingRelationships =
+              RealmRelationshipRegistry.getIncomingRelationships<T>();
           for (final relationship in incomingRelationships) {
-            final relatedEntities = relationship.getReferencingEntities(realm, entityId);
+            final relatedEntities = relationship.getReferencingEntities(
+              realm,
+              entityId,
+            );
             for (final relatedEntity in relatedEntities) {
-              relatedEntity.dynamic.set(relationship.relationshipProperty, entity);
+              relatedEntity.dynamic.set(
+                relationship.relationshipProperty,
+                entity,
+              );
             }
           }
         } catch (e) {
@@ -57,15 +74,25 @@ class RealmService {
     return realm.find<T>(id);
   }
 
-  Future<RealmResults<T>> getEntities<T extends RealmObject>(RealmQueryBuilder query) async {
+  Future<RealmResults<T>> getEntities<T extends RealmObject>(
+    RealmQueryBuilder query,
+  ) async {
     final realm = Realm(config);
-    var objects = realm.query<T>(query.getQueryString(), query.getQueryValues());
+    var objects = realm.query<T>(
+      query.getQueryString(),
+      query.getQueryValues(),
+    );
     return objects;
   }
 
-  Stream<RealmResultsChanges<T>> observeEntities<T extends RealmObject>(RealmQueryBuilder query) {
+  Stream<RealmResultsChanges<T>> observeEntities<T extends RealmObject>(
+    RealmQueryBuilder query,
+  ) {
     final realm = Realm(config);
-    var objects = realm.query<T>(query.getQueryString(), query.getQueryValues());
+    var objects = realm.query<T>(
+      query.getQueryString(),
+      query.getQueryValues(),
+    );
     return objects.changes;
   }
 

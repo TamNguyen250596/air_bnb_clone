@@ -2,6 +2,7 @@ import 'package:air_bnb_clone/commons/widgets/custom_app_bar.dart';
 import 'package:air_bnb_clone/modules/guest/view_posting/view_posting_viewmodel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:provider/provider.dart';
 import '../../../commons/widgets/posting_info_item.dart';
 
@@ -13,20 +14,30 @@ class ViewPostingScreen extends StatefulWidget {
 }
 
 class _ViewPostingScreenState extends State<ViewPostingScreen> {
+
   // Content
-  Widget _imageHeaderView(BuildContext context) {
+  Widget _imagesHeaderView(BuildContext context) {
     return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => CachedNetworkImage(
-        imageUrl: viewModel.imageUrl,
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.width * 2 / 3,
-        placeholder: (context, url) => SizedBox(
-          height: 10.0,
-          width: 10.0,
-          child: Center(child: CircularProgressIndicator()),
+      builder: (context, viewModel, _) => AspectRatio(
+        aspectRatio: 3 / 2,
+        child: PageView.builder(
+          itemCount: viewModel.displayImages.length,
+          itemBuilder: (context, index) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: CachedNetworkImage(
+                imageUrl: viewModel.displayImages[index],
+                placeholder: (context, url) => SizedBox(
+                  height: 10.0,
+                  width: 10.0,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                fit: BoxFit.contain,
+              ),
+            );
+          },
         ),
-        fit: BoxFit.contain,
-      ),
+      )
     );
   }
 
@@ -105,29 +116,86 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
         runSpacing: 8,
         children: viewModel.amenities.map((amenity) {
           return Chip(
-            label: Text(
-              amenity,
-              style: const TextStyle(color: Colors.white),
-            ),
+            label: Text(amenity, style: const TextStyle(color: Colors.white)),
             backgroundColor: Colors.green.withValues(alpha: 0.2),
           );
         }).toList(),
-      )
+      ),
     );
   }
 
   Widget _locationView() {
     return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            viewModel.address,
-            style: const TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(height: 10),
-        ],
-      ),
+      builder: (context, viewModel, _) {
+        final center = viewModel.propertyLatLong;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              viewModel.address,
+              style: const TextStyle(color: Colors.white70),
+            ),
+
+            const SizedBox(height: 10),
+
+            Stack(
+              children: [
+                SizedBox(
+                  height: 201,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: FlutterMap(
+                      options: MapOptions(
+                        initialCenter: center,
+                        initialZoom: 15,
+                        interactionOptions: const InteractionOptions(
+                          flags: InteractiveFlag.all,
+                        ),
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.air_bnb_clone',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: center,
+                              width: 48,
+                              height: 48,
+                              child: GestureDetector(
+                                onTap: () {
+                                  viewModel.selectedMarker();
+                                },
+                                child: Image.asset(
+                                  'assets/images/house.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (viewModel.displayAddress.isNotEmpty)
+                  Card(
+                    color: Colors.grey,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Text(
+                        viewModel.displayAddress,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -191,30 +259,18 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
         padding: const EdgeInsets.only(bottom: 80),
         child: Column(
           children: [
-            _imageHeaderView(context),
+            _imagesHeaderView(context),
             _title(),
             _descriptionCard(),
 
-            _sectionCard(
-              "Details",
-              _postingInfoTiles(),
-            ),
+            _sectionCard("Details", _postingInfoTiles()),
 
-            _sectionCard(
-              "Amenities",
-              _amenitiesView(),
-            ),
+            _sectionCard("Amenities", _amenitiesView()),
 
-            _sectionCard(
-              "Location",
-              _locationView(),
-            ),
+            _sectionCard("Location", _locationView()),
 
             // Reviews
-            _sectionCard(
-              "Reviews",
-              Column(children: []),
-            ),
+            _sectionCard("Reviews", Column(children: [])),
 
             _hostCard(),
           ],

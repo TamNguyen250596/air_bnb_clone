@@ -6,6 +6,8 @@ class Place {
   String? country;
   String? city;
   String? address;
+  double? lat;
+  double? lon;
 
   // Constructor
   Place(this.id, this.name, this.country);
@@ -27,6 +29,8 @@ class Place {
     country = properties['country'];
     city = properties['city'];
     address = properties['formatted'];
+    lat = properties['lat'];
+    lon = properties['lon'];
   }
 
   String _firstNonEmptyString(List<dynamic> values) {

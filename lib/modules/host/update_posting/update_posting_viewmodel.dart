@@ -37,6 +37,8 @@ class UpdatePostingViewModel extends ChangeNotifier {
   String _address = "";
   String _city = "";
   String _country = "";
+  double lat = 0.0;
+  double lon = 0.0;
   String _amenities = "";
   final List<String> _propertyTypes = [
     'Detached House',
@@ -125,6 +127,8 @@ class UpdatePostingViewModel extends ChangeNotifier {
     _address = place.address ?? "";
     _city = place.city ?? "";
     _country = place.country ?? "";
+    lat = place.lat ?? 0.0;
+    lon = place.lon ?? 0.0;
     notifyListeners();
   }
 
@@ -253,6 +257,8 @@ class UpdatePostingViewModel extends ChangeNotifier {
         amenities: _amenities.toLowerCase().split(","),
         beds: _beds ?? {},
         bathrooms: _bathrooms ?? {},
+        lat: lat,
+        lon: lon,
       );
       if (_posting != null) {
         if (_posting.isValid) {

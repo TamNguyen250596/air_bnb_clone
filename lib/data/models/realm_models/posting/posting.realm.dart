@@ -10,6 +10,8 @@ part of 'posting.dart';
 // coverage:ignore-file
 // ignore_for_file: type=lint
 class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
+  static var _defaultsSet = false;
+
   Posting(
     String id, {
     String? name,
@@ -22,11 +24,19 @@ class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
     double? rating,
     String? hostId,
     User? host,
+    double lat = 0.0,
+    double lon = 0.0,
     Iterable<String> images = const [],
     Iterable<String> amenities = const [],
     Map<String, int> beds = const {},
     Map<String, int> bathrooms = const {},
   }) {
+    if (!_defaultsSet) {
+      _defaultsSet = RealmObjectBase.setDefaults<Posting>({
+        'lat': 0.0,
+        'lon': 0.0,
+      });
+    }
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'name', name);
     RealmObjectBase.set(this, 'type', type);
@@ -38,6 +48,8 @@ class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'rating', rating);
     RealmObjectBase.set(this, 'hostId', hostId);
     RealmObjectBase.set(this, 'host', host);
+    RealmObjectBase.set(this, 'lat', lat);
+    RealmObjectBase.set(this, 'lon', lon);
     RealmObjectBase.set<RealmList<String>>(
       this,
       'images',
@@ -118,6 +130,16 @@ class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
   set host(covariant User? value) => RealmObjectBase.set(this, 'host', value);
 
   @override
+  double get lat => RealmObjectBase.get<double>(this, 'lat') as double;
+  @override
+  set lat(double value) => RealmObjectBase.set(this, 'lat', value);
+
+  @override
+  double get lon => RealmObjectBase.get<double>(this, 'lon') as double;
+  @override
+  set lon(double value) => RealmObjectBase.set(this, 'lon', value);
+
+  @override
   RealmList<String> get images =>
       RealmObjectBase.get<String>(this, 'images') as RealmList<String>;
   @override
@@ -168,6 +190,8 @@ class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
       'rating': rating.toEJson(),
       'hostId': hostId.toEJson(),
       'host': host.toEJson(),
+      'lat': lat.toEJson(),
+      'lon': lon.toEJson(),
       'images': images.toEJson(),
       'amenities': amenities.toEJson(),
       'beds': beds.toEJson(),
@@ -191,6 +215,8 @@ class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
         rating: fromEJson(ejson['rating']),
         hostId: fromEJson(ejson['hostId']),
         host: fromEJson(ejson['host']),
+        lat: fromEJson(ejson['lat'], defaultValue: 0.0),
+        lon: fromEJson(ejson['lon'], defaultValue: 0.0),
         images: fromEJson(ejson['images']),
         amenities: fromEJson(ejson['amenities']),
         beds: fromEJson(ejson['beds']),
@@ -220,6 +246,8 @@ class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
         optional: true,
         linkTarget: 'User',
       ),
+      SchemaProperty('lat', RealmPropertyType.double),
+      SchemaProperty('lon', RealmPropertyType.double),
       SchemaProperty(
         'images',
         RealmPropertyType.string,

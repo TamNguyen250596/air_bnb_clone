@@ -18,6 +18,8 @@ extension PostingFirestoreExtension on Posting {
       if (amenities.isNotEmpty) 'amenities': amenities,
       if (beds.isNotEmpty) 'beds': beds,
       if (bathrooms.isNotEmpty) 'bathrooms': bathrooms,
+      "lat": lat,
+      "lon": lon,
     };
   }
 }
@@ -40,6 +42,8 @@ class PostingFirestoreHelper {
       amenities: List<String>.from(data['amenities'] ?? []),
       beds: Map<String, int>.from(data['beds'] ?? {}),
       bathrooms: Map<String, int>.from(data['bathrooms'] ?? {}),
+      lat: (data['lat'] as num?)?.toDouble() ?? 0.0,
+      lon: (data['lon'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
