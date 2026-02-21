@@ -1,10 +1,13 @@
 import 'package:air_bnb_clone/commons/widgets/custom_app_bar.dart';
+import 'package:air_bnb_clone/commons/widgets/review_form.dart';
 import 'package:air_bnb_clone/modules/guest/view_posting/view_posting_viewmodel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../commons/widgets/posting_info_item.dart';
+import '../../../routing/route_id.dart';
 
 class ViewPostingScreen extends StatefulWidget {
   const ViewPostingScreen({super.key});
@@ -14,6 +17,24 @@ class ViewPostingScreen extends StatefulWidget {
 }
 
 class _ViewPostingScreenState extends State<ViewPostingScreen> {
+
+  // Navigation
+  Future<void> _navigateToBookPosting() async {
+    final vm = context.read<ViewPostingViewModel>();
+    // Pass a copy so BookPosting only mutates its own map; dates apply only when user taps "Book Now" and we pop with result.
+    final Map<String, dynamic> extra = {
+      "name": vm.name,
+      "dates": Map<String, DateTime>.from(vm.bookingTimeMap),
+    };
+
+    final bookingTimeMap = await context.pushNamed<Map<String, DateTime>>(
+      RouteConstant.bookPosting,
+      extra: extra,
+    );
+    if (bookingTimeMap != null) {
+      vm.updateBookingTimeMap(bookingTimeMap);
+    }
+  }
 
   // Content
   Widget _imagesHeaderView(BuildContext context) {
@@ -251,6 +272,97 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
     );
   }
 
+  Widget _reviewSection() {
+    return Consumer<ViewPostingViewModel>(
+      builder: (context, viewModel, _) {
+        return _sectionCard("Reviews", Column(children: [
+          ReviewForm(
+            initialRating: viewModel.reviewRating,
+            onRatingChanged: viewModel.setReviewRating,
+          ),
+        ]));
+      },
+    );
+  }
+
+  Widget _bottomNavigationBar() {
+    return Consumer<ViewPostingViewModel>(
+      builder: (context, viewModel, _) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 6,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8, right: 8, bottom: 28),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      viewModel.price,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      "/ day",
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+
+                // Book Now button is only enabled for users who are NOT the host
+                (!viewModel.isHost)
+                    ? ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    _navigateToBookPosting();
+                  },
+                  child: const Text(
+                    "Book Now",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
+                )
+                    : Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    "Cannot Book Your Own Posting",
+                    style: TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -269,13 +381,13 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
 
             _sectionCard("Location", _locationView()),
 
-            // Reviews
-            _sectionCard("Reviews", Column(children: [])),
+            _reviewSection(),
 
             _hostCard(),
           ],
         ),
       ),
+      bottomNavigationBar: _bottomNavigationBar()
     );
   }
 }

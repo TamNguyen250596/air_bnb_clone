@@ -26,8 +26,67 @@ class RatingWidget {
 /// [RatingBar] can also be used to display rating.
 /// Prefer using [RatingBarIndicator] for read-only display with fractional values.
 class RatingBar extends StatefulWidget {
+  /// Creates [RatingBar] with icon-based parameters (e.g. [filledIcon], [emptyIcon], [filledColor]).
+  ///
+  /// Matches the API used by [ReviewForm] and similar icon-based usage.
+  factory RatingBar({
+    Key? key,
+    double size = 40.0,
+    int maxRating = 5,
+    double initialRating = 0.0,
+    IconData filledIcon = Icons.star,
+    IconData emptyIcon = Icons.star_border,
+    IconData? halfFilledIcon,
+    bool allowHalfRating = false,
+    Color filledColor = Colors.amber,
+    Color? emptyColor,
+    Color? halfFilledColor,
+    ValueChanged<double>? onRatingChanged,
+    Color? glowColor,
+    TextDirection? textDirection,
+    Color? unratedColor,
+    Axis direction = Axis.horizontal,
+    bool glow = true,
+    double glowRadius = 2,
+    bool ignoreGestures = false,
+    EdgeInsetsGeometry itemPadding = EdgeInsets.zero,
+    double minRating = 0,
+    bool tapOnlyMode = false,
+    bool updateOnDrag = false,
+    WrapAlignment wrapAlignment = WrapAlignment.start,
+  }) {
+    final ec = emptyColor ?? Colors.grey;
+    final hfc = halfFilledColor ?? filledColor;
+    return RatingBar.withRatingWidget(
+      key: key,
+      ratingWidget: RatingWidget(
+        full: Icon(filledIcon, color: filledColor),
+        half: Icon(halfFilledIcon ?? filledIcon, color: hfc),
+        empty: Icon(emptyIcon, color: ec),
+      ),
+      onRatingUpdate: onRatingChanged ?? (_) {},
+      glowColor: glowColor,
+      maxRating: maxRating.toDouble(),
+      textDirection: textDirection,
+      unratedColor: unratedColor,
+      allowHalfRating: allowHalfRating,
+      direction: direction,
+      glow: glow,
+      glowRadius: glowRadius,
+      ignoreGestures: ignoreGestures,
+      initialRating: initialRating,
+      itemCount: maxRating,
+      itemPadding: itemPadding,
+      itemSize: size,
+      minRating: minRating,
+      tapOnlyMode: tapOnlyMode,
+      updateOnDrag: updateOnDrag,
+      wrapAlignment: wrapAlignment,
+    );
+  }
+
   /// Creates [RatingBar] using the [ratingWidget].
-  const RatingBar({
+  const RatingBar.withRatingWidget({
     super.key,
     required RatingWidget ratingWidget,
     required this.onRatingUpdate,
@@ -67,7 +126,7 @@ class RatingBar extends StatefulWidget {
     Color halfFilledColor = Colors.amber,
     double size = 32.0,
   }) {
-    return RatingBar(
+    return RatingBar.withRatingWidget(
       key: key,
       ratingWidget: RatingWidget(
         full: Icon(filledIcon, color: filledColor),

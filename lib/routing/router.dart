@@ -8,6 +8,8 @@ import '../modules/auth/log_in/login_screen.dart';
 import '../modules/auth/log_in/login_viewmodel.dart';
 import '../modules/auth/sign_up/signup_screen.dart';
 import '../modules/auth/sign_up/signup_viewmodel.dart';
+import '../modules/guest/book_posting/book_posting_screen.dart';
+import '../modules/guest/book_posting/book_posting_viewmodel.dart';
 import '../modules/guest/guest_home_screen.dart';
 import '../modules/guest/explore/explore_screen.dart';
 import '../modules/guest/explore/explore_viewmodel.dart';
@@ -90,11 +92,26 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               builder: (context, state) {
                 return ChangeNotifierProvider(
                   create: (_) => ViewPostingViewModel(
-                    state.extra as Posting
+                    authRepository: context.read(),
+                    posting: state.extra as Posting,
                   ),
                   child: const ViewPostingScreen(),
                 );
-              }
+              },
+              routes: [
+                _route(
+                  RouteConstant.bookPosting,
+                  builder: (context, state) {
+                    final parameters = state.extra as Map<String, dynamic>;
+                    return ChangeNotifierProvider(
+                      create: (_) => BookPostingViewModel(
+                        parameters: parameters,
+                      ),
+                      child: const BookPostingScreen(),
+                    );
+                  }
+                )
+              ]
             )
           ]
         ),

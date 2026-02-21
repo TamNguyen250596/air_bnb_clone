@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:air_bnb_clone/commons/base/base_change_notifier.dart';
 import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
+import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../data/models/item/base_item_model.dart';
@@ -9,11 +10,16 @@ import '../../../data/models/item/base_item_model.dart';
 class ViewPostingViewModel extends BaseChangeNotifier {
 
   // Constructor
-  ViewPostingViewModel(Posting posting) : _posting = posting {
+  ViewPostingViewModel({
+    required AuthRepository authRepository,
+    required Posting posting,
+  })  : _authRepository = authRepository,
+        _posting = posting {
     _setupInitialValues();
   }
 
   // Private Properties
+  final AuthRepository _authRepository;
   final Posting _posting;
   List<String> _displayImages = [];
   String _title = "";
@@ -26,6 +32,11 @@ class ViewPostingViewModel extends BaseChangeNotifier {
   LatLng _propertyLatLong = LatLng(37.42796133580664, -122.085749655962);
   String _displayAddress = "";
   Timer? _displayAddressTimer;
+  double _reviewRating = 0.0;
+  bool _isHost = false;
+  String _price = "";
+  String _name = "";
+  Map<String, DateTime> _bookingTimeMap = {};
 
   // Public Properties
   Posting get posting => _posting;
@@ -39,6 +50,11 @@ class ViewPostingViewModel extends BaseChangeNotifier {
   String get hostName => _hostName;
   LatLng get propertyLatLong => _propertyLatLong;
   String get displayAddress => _displayAddress;
+  double get reviewRating => _reviewRating;
+  bool get isHost => _isHost;
+  String get price => _price;
+  String get name => _name;
+  Map<String, DateTime> get bookingTimeMap => _bookingTimeMap;
 
   // Life cycle
   @override
@@ -48,6 +64,11 @@ class ViewPostingViewModel extends BaseChangeNotifier {
   }
 
   // Public Functions
+  void setReviewRating(double value) {
+    _reviewRating = value;
+    notifyListeners();
+  }
+
   void selectedMarker() {
     if (!_posting.isValid) {
       return;
@@ -59,6 +80,10 @@ class ViewPostingViewModel extends BaseChangeNotifier {
       _displayAddress = "";
       notifyListeners();
     });
+  }
+
+  void updateBookingTimeMap(Map<String, DateTime> map) {
+    _bookingTimeMap = map;
   }
 
   // Private Functions
@@ -109,6 +134,13 @@ class ViewPostingViewModel extends BaseChangeNotifier {
       return;
     }
 
+    _authRepository.userId.then((userId) {
+      _isHost = userId == _posting.hostId;
+      notifyListeners();
+    });
+
+    _price = _posting.price != null ? "\$${_posting.price!.toStringAsFixed(0)}" : "";
+    _name = _posting.name ?? "";
     _displayImages = _posting.images;
     _title = _posting.name ?? "";
     _description = _posting.description ?? "";

@@ -19,5 +19,7 @@ ${BUILT_PRODUCTS_DIR}/gRPC-Core/grpc.framework
 ${BUILT_PRODUCTS_DIR}/leveldb-library/leveldb.framework
 ${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework
 ${BUILT_PRODUCTS_DIR}/path_provider_foundation/path_provider_foundation.framework
+${PODS_ROOT}/../Flutter/ephemeral/.symlinks/plugins/realm/macos/librealm_dart.dylib
 ${BUILT_PRODUCTS_DIR}/realm/realm.framework
 ${BUILT_PRODUCTS_DIR}/shared_preferences_foundation/shared_preferences_foundation.framework
+${BUILT_PRODUCTS_DIR}/sqflite_darwin/sqflite_darwin.framework
