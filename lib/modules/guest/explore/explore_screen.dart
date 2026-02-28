@@ -1,7 +1,7 @@
-import 'package:air_bnb_clone/modules/guest/explore/explore_viewmodel.dart';
+import 'package:air_bnb_clone/modules/guest/explore/explore_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
 import '../../../commons/widgets/posting_grid_item.dart';
 import '../../../data/models/realm_models/posting/posting.dart';
@@ -15,16 +15,16 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
-  // Navigation
   void _navigateToViewPostingPage(Posting posting) {
     context.pushNamed(RouteConstant.viewPosting, extra: posting);
   }
 
-  // Content
   Widget searchBar() {
-    return Consumer<ExploreViewModel>(
-      builder: (context, viewModel, _) => TextField(
-        onChanged: (c) => viewModel.setSearchTxt(c),
+    return BlocBuilder<ExploreCubit, ExploreState>(
+      buildWhen: (_, __) => false,
+      builder: (context, state) {
+        return TextField(
+          onChanged: (c) => context.read<ExploreCubit>().setSearchTxt(c),
         style: const TextStyle(fontSize: 20.0, color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Search by place name, city, property type, ...',
@@ -39,42 +39,45 @@ class _ExploreScreenState extends State<ExploreScreen> {
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-      ),
+      );
+      },
     );
   }
 
   Widget gridView() {
-    return Consumer<ExploreViewModel>(
-      builder: (context, viewModel, child) => GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        itemCount: viewModel.postings.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 15,
-          childAspectRatio: 3 / 4,
-        ),
-        itemBuilder: (context, index) {
-          final posting = viewModel.postings[index];
-
-          return Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1.0),
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            child: InkWell(
-              onTap: () {
-                final entity = viewModel.getPostingEntity(posting);
-                if (entity != null) {
-                  _navigateToViewPostingPage(entity);
-                }
-              },
-              child: PostingGridItem(item: posting),
-            ),
-          );
-        },
-      ),
+    return BlocBuilder<ExploreCubit, ExploreState>(
+      builder: (context, state) {
+        return GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: state.postings.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 15,
+            childAspectRatio: 3 / 4,
+          ),
+          itemBuilder: (context, index) {
+            final posting = state.postings[index];
+            final cubit = context.read<ExploreCubit>();
+            return Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 1.0),
+                borderRadius: BorderRadius.circular(5.0),
+              ),
+              child: InkWell(
+                onTap: () {
+                  final entity = cubit.getPostingEntity(posting);
+                  if (entity != null) {
+                    _navigateToViewPostingPage(entity);
+                  }
+                },
+                child: PostingGridItem(item: posting),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

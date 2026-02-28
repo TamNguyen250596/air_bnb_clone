@@ -1,54 +1,35 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
 import '../../../commons/widgets/text_snack_bar.dart';
-import 'account_viewmodel.dart';
+import 'account_cubit.dart';
 
-// ========== Account Screen Widget ==========
 class AccountScreen extends StatefulWidget {
-  // ========== Constructor ==========
   const AccountScreen({super.key});
 
-  // ========== Lifecycle ==========
   @override
   State<AccountScreen> createState() => _AccountScreenState();
 }
 
-// ========== Account Screen State ==========
 class _AccountScreenState extends State<AccountScreen> {
-
-  // ========== Action Methods ==========
-  Future<void> _changeHost() async {
-    final vm = context.read<AccountViewModel>();
-    await vm.changeHost();
-    if (!mounted) return;
-    if (vm.errorMessage.isNotEmpty) {
-      TextSnackBar.show(context, vm.errorMessage);
-    } else if (vm.routeId != null) {
-      context.go(vm.routeId!);
-    }
+  void _changeHost() {
+    context.read<AccountCubit>().changeHost();
   }
 
-  Future<void> _signOut() async {
-    final vm = context.read<AccountViewModel>();
-    await vm.signOut();
-    if (!mounted) return;
-    if (vm.errorMessage.isNotEmpty) {
-      TextSnackBar.show(context, vm.errorMessage);
-    }
+  void _signOut() {
+    context.read<AccountCubit>().signOut();
   }
 
-  // ========== Build Method ==========
   Widget _avatar() {
-    return Consumer<AccountViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<AccountCubit, AccountState>(
+      builder: (context, state) {
         return GestureDetector(
           onTap: () {},
           child: CachedNetworkImage(
-            imageUrl: viewModel.avatarUrl,
-            placeholder: (context, url) => CircularProgressIndicator(),
+            imageUrl: state.avatarUrl,
+            placeholder: (context, url) => const CircularProgressIndicator(),
             imageBuilder: (context, imageProvider) => Container(
               height: 180,
               width: 180,
@@ -73,10 +54,10 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _fullName() {
-    return Consumer<AccountViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<AccountCubit, AccountState>(
+      builder: (context, state) {
         return Text(
-          viewModel.fullName,
+          state.fullName,
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -88,10 +69,10 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _email() {
-    return Consumer<AccountViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<AccountCubit, AccountState>(
+      builder: (context, state) {
         return Text(
-          viewModel.email,
+          state.email,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -103,11 +84,11 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Widget _businessButtonTitle() {
-    return Consumer<AccountViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<AccountCubit, AccountState>(
+      builder: (context, state) {
         return _buildActionTitle(
           context,
-          viewModel.businessButtonTitle,
+          state.businessButtonTitle,
           Icons.add_business,
           _changeHost,
         );
@@ -133,7 +114,7 @@ class _AccountScreenState extends State<AccountScreen> {
             title,
             style: const TextStyle(
               fontSize: 16,
-              fontWeight: .bold,
+              fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
@@ -144,42 +125,54 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(title: 'Profile'),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                    _avatar(),
-                    const SizedBox(height: 16),
-                    _fullName(),
-                    const SizedBox(height: 4),
-                    _email(),
-                  ],
+    return BlocListener<AccountCubit, AccountState>(
+      listenWhen: (prev, curr) =>
+          (curr.errorMessage != null && curr.errorMessage!.isNotEmpty) ||
+          curr.routeId != null,
+      listener: (context, state) {
+        if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
+          TextSnackBar.show(context, state.errorMessage!);
+        }
+        if (state.routeId != null) {
+          context.go(state.routeId!);
+        }
+      },
+      child: Scaffold(
+        appBar: const CustomAppBar(title: 'Profile'),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                      _avatar(),
+                      const SizedBox(height: 16),
+                      _fullName(),
+                      const SizedBox(height: 4),
+                      _email(),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              _buildActionTitle(
-                context,
-                "Personal Information",
-                Icons.person_pin,
-                () {},
-              ),
-              const SizedBox(height: 16),
-              _businessButtonTitle(),
-
-              const SizedBox(height: 16),
-              _buildActionTitle(
-                context,
-                "Log Out",
-                Icons.login_outlined,
-                _signOut,
-              ),
-            ],
+                const SizedBox(height: 16),
+                _buildActionTitle(
+                  context,
+                  "Personal Information",
+                  Icons.person_pin,
+                  () {},
+                ),
+                const SizedBox(height: 16),
+                _businessButtonTitle(),
+                const SizedBox(height: 16),
+                _buildActionTitle(
+                  context,
+                  "Log Out",
+                  Icons.login_outlined,
+                  _signOut,
+                ),
+              ],
+            ),
           ),
         ),
       ),

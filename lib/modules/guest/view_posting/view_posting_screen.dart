@@ -1,11 +1,11 @@
 import 'package:air_bnb_clone/commons/widgets/custom_app_bar.dart';
 import 'package:air_bnb_clone/commons/widgets/review_form.dart';
-import 'package:air_bnb_clone/modules/guest/view_posting/view_posting_viewmodel.dart';
+import 'package:air_bnb_clone/modules/guest/view_posting/view_posting_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../../commons/widgets/posting_info_item.dart';
 import '../../../routing/route_id.dart';
 
@@ -17,14 +17,12 @@ class ViewPostingScreen extends StatefulWidget {
 }
 
 class _ViewPostingScreenState extends State<ViewPostingScreen> {
-
-  // Navigation
   Future<void> _navigateToBookPosting() async {
-    final vm = context.read<ViewPostingViewModel>();
-    // Pass a copy so BookPosting only mutates its own map; dates apply only when user taps "Book Now" and we pop with result.
+    final cubit = context.read<ViewPostingCubit>();
+    final state = cubit.state;
     final Map<String, dynamic> extra = {
-      "name": vm.name,
-      "dates": Map<String, DateTime>.from(vm.bookingTimeMap),
+      "name": state.name,
+      "dates": Map<String, DateTime>.from(state.bookingTimeMap),
     };
 
     final bookingTimeMap = await context.pushNamed<Map<String, DateTime>>(
@@ -32,23 +30,22 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
       extra: extra,
     );
     if (bookingTimeMap != null) {
-      vm.updateBookingTimeMap(bookingTimeMap);
+      cubit.updateBookingTimeMap(bookingTimeMap);
     }
   }
 
-  // Content
   Widget _imagesHeaderView(BuildContext context) {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => AspectRatio(
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => AspectRatio(
         aspectRatio: 3 / 2,
         child: PageView.builder(
-          itemCount: viewModel.displayImages.length,
+          itemCount: state.displayImages.length,
           itemBuilder: (context, index) {
             return ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: CachedNetworkImage(
-                imageUrl: viewModel.displayImages[index],
-                placeholder: (context, url) => SizedBox(
+                imageUrl: state.displayImages[index],
+                placeholder: (context, url) => const SizedBox(
                   height: 10.0,
                   width: 10.0,
                   child: Center(child: CircularProgressIndicator()),
@@ -58,16 +55,16 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
             );
           },
         ),
-      )
+      ),
     );
   }
 
   Widget _title() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => Padding(
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => Padding(
         padding: const EdgeInsets.all(16),
         child: Text(
-          viewModel.title,
+          state.title,
           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
@@ -75,8 +72,8 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _descriptionCard() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => Container(
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => Container(
         width: double.infinity,
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.all(16),
@@ -85,7 +82,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          viewModel.description,
+          state.description,
           style: const TextStyle(color: Colors.white70),
           textAlign: TextAlign.justify,
         ),
@@ -117,13 +114,13 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _postingInfoTiles() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => ListView.builder(
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        itemCount: viewModel.postingInfoTiles.length,
+        itemCount: state.postingInfoTiles.length,
         itemBuilder: (context, index) {
-          final item = viewModel.postingInfoTiles[index];
+          final item = state.postingInfoTiles[index];
           return PostingInfoTile(item: item);
         },
       ),
@@ -131,11 +128,11 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _amenitiesView() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) => Wrap(
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: viewModel.amenities.map((amenity) {
+        children: state.amenities.map((amenity) {
           return Chip(
             label: Text(amenity, style: const TextStyle(color: Colors.white)),
             backgroundColor: Colors.green.withValues(alpha: 0.2),
@@ -146,19 +143,18 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _locationView() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) {
-        final center = viewModel.propertyLatLong;
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) {
+        final center = state.propertyLatLong;
+        final cubit = context.read<ViewPostingCubit>();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              viewModel.address,
+              state.address,
               style: const TextStyle(color: Colors.white70),
             ),
-
             const SizedBox(height: 10),
-
             Stack(
               children: [
                 SizedBox(
@@ -176,7 +172,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                       children: [
                         TileLayer(
                           urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                           userAgentPackageName: 'com.example.air_bnb_clone',
                         ),
                         MarkerLayer(
@@ -186,9 +182,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                               width: 48,
                               height: 48,
                               child: GestureDetector(
-                                onTap: () {
-                                  viewModel.selectedMarker();
-                                },
+                                onTap: () => cubit.selectedMarker(),
                                 child: Image.asset(
                                   'assets/images/house.png',
                                   fit: BoxFit.contain,
@@ -201,13 +195,13 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                     ),
                   ),
                 ),
-                if (viewModel.displayAddress.isNotEmpty)
+                if (state.displayAddress.isNotEmpty)
                   Card(
                     color: Colors.grey,
                     child: Padding(
                       padding: const EdgeInsets.all(4),
                       child: Text(
-                        viewModel.displayAddress,
+                        state.displayAddress,
                         style: const TextStyle(color: Colors.white),
                       ),
                     ),
@@ -221,9 +215,10 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _hostCard() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) {
-        final host = viewModel.posting.host!;
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) {
+        final host = context.read<ViewPostingCubit>().posting.host;
+        if (host == null) return const SizedBox.shrink();
         return Container(
           width: double.infinity,
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -235,9 +230,9 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 "Hosted by",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white70,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -264,7 +259,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(viewModel.hostName),
+              Text(state.hostName),
             ],
           ),
         );
@@ -273,12 +268,12 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _reviewSection() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) {
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) {
         return _sectionCard("Reviews", Column(children: [
           ReviewForm(
-            initialRating: viewModel.reviewRating,
-            onRatingChanged: viewModel.setReviewRating,
+            initialRating: state.reviewRating,
+            onRatingChanged: (v) => context.read<ViewPostingCubit>().setReviewRating(v),
           ),
         ]));
       },
@@ -286,8 +281,8 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
   }
 
   Widget _bottomNavigationBar() {
-    return Consumer<ViewPostingViewModel>(
-      builder: (context, viewModel, _) {
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -310,7 +305,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      viewModel.price,
+                      state.price,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -323,38 +318,34 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                     ),
                   ],
                 ),
-
-                // Book Now button is only enabled for users who are NOT the host
-                (!viewModel.isHost)
+                (!state.isHost)
                     ? ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 32, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    _navigateToBookPosting();
-                  },
-                  child: const Text(
-                    "Book Now",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                )
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: _navigateToBookPosting,
+                        child: const Text(
+                          "Book Now",
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                      )
                     : Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    "Cannot Book Your Own Posting",
-                    style: TextStyle(fontSize: 12, color: Colors.white70),
-                  ),
-                ),
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          "Cannot Book Your Own Posting",
+                          style: TextStyle(fontSize: 12, color: Colors.white70),
+                        ),
+                      ),
               ],
             ),
           ),
@@ -374,20 +365,15 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
             _imagesHeaderView(context),
             _title(),
             _descriptionCard(),
-
             _sectionCard("Details", _postingInfoTiles()),
-
             _sectionCard("Amenities", _amenitiesView()),
-
             _sectionCard("Location", _locationView()),
-
             _reviewSection(),
-
             _hostCard(),
           ],
         ),
       ),
-      bottomNavigationBar: _bottomNavigationBar()
+      bottomNavigationBar: _bottomNavigationBar(),
     );
   }
 }

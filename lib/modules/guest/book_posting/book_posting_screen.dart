@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
-import 'book_posting_viewmodel.dart';
+import 'book_posting_cubit.dart';
 
 class BookPostingScreen extends StatefulWidget {
   const BookPostingScreen({super.key});
@@ -12,22 +12,20 @@ class BookPostingScreen extends StatefulWidget {
 }
 
 class _BookPostingScreenState extends State<BookPostingScreen> {
-
-  // Navigation
   void _popBack() {
-    final vm = context.read<BookPostingViewModel>();
-    context.pop(vm.dates);
+    final state = context.read<BookPostingCubit>().state;
+    context.pop(state.dates);
   }
 
-  // Content
   PreferredSizeWidget _appBar(BuildContext context) {
-    final viewModel = context.read<BookPostingViewModel>();
-    return CustomAppBar(title: "Book Posting ${viewModel.name}");
+    final state = context.read<BookPostingCubit>().state;
+    return CustomAppBar(title: "Book Posting ${state.name}");
   }
 
   Widget _timeForm(String tag, String title) {
-    return Consumer<BookPostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<BookPostingCubit, BookPostingState>(
+      builder: (context, state) {
+        final cubit = context.read<BookPostingCubit>();
         return Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,21 +35,18 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
                 title,
                 style: const TextStyle(fontSize: 20, color: Colors.white),
               ),
-
               GestureDetector(
-                onTap: () {
-                  viewModel.setCurrentTag(tag);
-                },
+                onTap: () => cubit.setCurrentTag(tag),
                 child: Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: viewModel.currentTag == tag ? Colors.green : Colors.grey[900],
+                    color: state.currentTag == tag ? Colors.green : Colors.grey[900],
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      viewModel.getInitialDateStr(tag),
+                      state.getInitialDateStr(tag),
                       style: const TextStyle(fontSize: 20, color: Colors.white),
                     ),
                   ),
@@ -65,14 +60,15 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
   }
 
   Widget _calendar() {
-    return Consumer<BookPostingViewModel>(
-      builder: (context, viewModel, _) {
+    return BlocBuilder<BookPostingCubit, BookPostingState>(
+      builder: (context, state) {
+        final cubit = context.read<BookPostingCubit>();
         return CalendarDatePicker(
-          initialDate: viewModel.getInitialDate(),
-          firstDate: viewModel.firstDate,
-          lastDate: viewModel.lastDate,
+          initialDate: state.getInitialDate(),
+          firstDate: state.firstDate,
+          lastDate: state.lastDate,
           onDateChanged: (DateTime pickedDate) {
-            viewModel.updateSelectedDate(pickedDate);
+            cubit.updateSelectedDate(pickedDate);
           },
           calendarDelegate: const GregorianCalendarDelegate(),
         );
@@ -81,10 +77,10 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
   }
 
   Widget _bookButton() {
-    return Consumer<BookPostingViewModel>(
-      builder: (context, viewModel, _) {
+    return BlocBuilder<BookPostingCubit, BookPostingState>(
+      builder: (context, state) {
         return MaterialButton(
-          onPressed: viewModel.canBook ? () { _popBack(); } : null,
+          onPressed: state.canBook ? _popBack : null,
           minWidth: double.infinity,
           height: MediaQuery.of(context).size.height / 16,
           color: Colors.green,
@@ -111,11 +107,9 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
                 _timeForm('check_out', 'Check-out'),
               ],
             ),
-
             _calendar(),
-            Spacer(),
-
-            _bookButton()
+            const Spacer(),
+            _bookButton(),
           ],
         ),
       ),

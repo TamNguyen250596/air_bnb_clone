@@ -1,43 +1,42 @@
 import 'package:air_bnb_clone/routing/route_id.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import '../data/models/realm_models/posting/posting.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/place_repository.dart';
+import '../modules/auth/log_in/login_cubit.dart';
 import '../modules/auth/log_in/login_screen.dart';
-import '../modules/auth/log_in/login_viewmodel.dart';
+import '../modules/auth/sign_up/signup_cubit.dart';
 import '../modules/auth/sign_up/signup_screen.dart';
-import '../modules/auth/sign_up/signup_viewmodel.dart';
+import '../modules/guest/book_posting/book_posting_cubit.dart';
 import '../modules/guest/book_posting/book_posting_screen.dart';
-import '../modules/guest/book_posting/book_posting_viewmodel.dart';
-import '../modules/guest/guest_home_screen.dart';
+import '../modules/guest/explore/explore_cubit.dart';
 import '../modules/guest/explore/explore_screen.dart';
-import '../modules/guest/explore/explore_viewmodel.dart';
+import '../modules/guest/guest_home_screen.dart';
+import '../modules/guest/saved/saved_cubit.dart';
 import '../modules/guest/saved/saved_screen.dart';
-import '../modules/guest/saved/saved_viewmodel.dart';
+import '../modules/guest/trips/trips_cubit.dart';
 import '../modules/guest/trips/trips_screen.dart';
-import '../modules/guest/trips/trips_viewmodel.dart';
+import '../modules/guest/inbox/inbox_cubit.dart';
 import '../modules/guest/inbox/inbox_screen.dart';
-import '../modules/guest/inbox/inbox_viewmodel.dart';
+import '../modules/guest/account/account_cubit.dart';
 import '../modules/guest/account/account_screen.dart';
-import '../modules/guest/account/account_viewmodel.dart';
+import '../modules/guest/view_posting/view_posting_cubit.dart';
 import '../modules/guest/view_posting/view_posting_screen.dart';
-import '../modules/guest/view_posting/view_posting_viewmodel.dart';
 import '../modules/host/host_home_screen.dart';
+import '../modules/host/bookings/bookings_cubit.dart';
 import '../modules/host/bookings/bookings_screen.dart';
-import '../modules/host/bookings/bookings_viewmodel.dart';
+import '../modules/host/my_postings/my_postings_cubit.dart';
 import '../modules/host/my_postings/my_postings_screen.dart';
-import '../modules/host/my_postings/my_postings_viewmodel.dart';
+import '../modules/host/earnings/earnings_cubit.dart';
 import '../modules/host/earnings/earnings_screen.dart';
-import '../modules/host/earnings/earnings_viewmodel.dart';
-import 'package:go_router/go_router.dart';
+import '../modules/host/search_property_location/search_property_location_cubit.dart';
 import '../modules/host/search_property_location/search_property_location_screen.dart';
-import '../modules/host/search_property_location/search_property_location_viewmodel.dart';
+import '../modules/host/update_posting/update_posting_cubit.dart';
 import '../modules/host/update_posting/update_posting_screen.dart';
-import '../modules/host/update_posting/update_posting_viewmodel.dart';
+import 'package:go_router/go_router.dart';
 
-
-// ========== App Routes ==========
 GoRouter router(AuthRepository authRepository) => GoRouter(
   initialLocation: RouteConstant.explorePath,
   debugLogDiagnostics: true,
@@ -47,10 +46,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     GoRoute(
       path: RouteConstant.logInPath,
       builder: (context, state) {
-        return ChangeNotifierProvider(
-          create: (_) => LoginViewModel(
-            authResultRepository: context.read()
-          ),
+        return BlocProvider(
+          create: (_) => LoginCubit(authRepository: context.read()),
           child: const LogInScreen(),
         );
       },
@@ -58,18 +55,17 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         _route(
           RouteConstant.signUp,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => SignupViewModel(
+            return BlocProvider(
+              create: (_) => SignupCubit(
                 mediaRepository: context.read(),
-                authResultRepository: context.read()
+                authRepository: context.read(),
               ),
               child: const SignUpScreen(),
             );
-          }
-        )
-      ]
+          },
+        ),
+      ],
     ),
-
     ShellRoute(
       builder: (context, state, child) {
         return GuestHomeScreen(child: child);
@@ -79,10 +75,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.explorePath,
           name: RouteConstant.explorePath,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => ExploreViewModel(
-                postingRepository: context.read()
-              ),
+            return BlocProvider(
+              create: (_) => ExploreCubit(postingRepository: context.read()),
               child: const ExploreScreen(),
             );
           },
@@ -90,8 +84,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
             _route(
               RouteConstant.viewPosting,
               builder: (context, state) {
-                return ChangeNotifierProvider(
-                  create: (_) => ViewPostingViewModel(
+                return BlocProvider(
+                  create: (_) => ViewPostingCubit(
                     authRepository: context.read(),
                     posting: state.extra as Posting,
                   ),
@@ -103,24 +97,22 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                   RouteConstant.bookPosting,
                   builder: (context, state) {
                     final parameters = state.extra as Map<String, dynamic>;
-                    return ChangeNotifierProvider(
-                      create: (_) => BookPostingViewModel(
-                        parameters: parameters,
-                      ),
+                    return BlocProvider(
+                      create: (_) => BookPostingCubit(parameters: parameters),
                       child: const BookPostingScreen(),
                     );
-                  }
-                )
-              ]
-            )
-          ]
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           path: RouteConstant.savedPath,
           name: RouteConstant.saved,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => SavedViewModel(),
+            return BlocProvider(
+              create: (_) => SavedCubit(),
               child: const SavedScreen(),
             );
           },
@@ -129,8 +121,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.tripsPath,
           name: RouteConstant.trips,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => TripsViewModel(),
+            return BlocProvider(
+              create: (_) => TripsCubit(),
               child: const TripsScreen(),
             );
           },
@@ -139,8 +131,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.inboxPath,
           name: RouteConstant.inbox,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => InboxViewModel(),
+            return BlocProvider(
+              create: (_) => InboxCubit(),
               child: const InboxScreen(),
             );
           },
@@ -149,8 +141,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.accountPath,
           name: RouteConstant.account,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => AccountViewModel(
+            return BlocProvider(
+              create: (_) => AccountCubit(
                 userRepository: context.read(),
                 authRepository: context.read(),
               ),
@@ -160,7 +152,6 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
         ),
       ],
     ),
-
     ShellRoute(
       builder: (context, state, child) {
         return HostHomeScreen(child: child);
@@ -170,8 +161,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.bookingsPath,
           name: RouteConstant.bookings,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => BookingsViewModel(),
+            return BlocProvider(
+              create: (_) => BookingsCubit(),
               child: const BookingsPage(),
             );
           },
@@ -180,8 +171,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.myPostingsPath,
           name: RouteConstant.myPostings,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => MyPostingsViewModel(
+            return BlocProvider(
+              create: (_) => MyPostingsCubit(
                 postingRepository: context.read(),
                 authRepository: context.read(),
               ),
@@ -193,9 +184,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               RouteConstant.updatePosting,
               builder: (context, state) {
                 final posting = state.extra as Posting?;
-
-                return ChangeNotifierProvider(
-                  create: (_) => UpdatePostingViewModel(
+                return BlocProvider(
+                  create: (_) => UpdatePostingCubit(
                     postingRepository: context.read(),
                     mediaRepository: context.read(),
                     authRepository: context.read(),
@@ -208,24 +198,24 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                 _route(
                   RouteConstant.searchPropertyLocation,
                   builder: (context, state) {
-                    return ChangeNotifierProvider(
-                      create: (_) => SearchPropertyLocationViewModel(
+                    return BlocProvider(
+                      create: (_) => SearchPropertyLocationCubit(
                         placeRepository: context.read<PlaceRepository>(),
                       ),
                       child: const SearchPropertyLocationScreen(),
                     );
-                  }
-                )
-              ]
-            )
-          ]
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           path: RouteConstant.hostInboxPath,
           name: RouteConstant.hostInbox,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => InboxViewModel(),
+            return BlocProvider(
+              create: (_) => InboxCubit(),
               child: const InboxScreen(),
             );
           },
@@ -234,8 +224,8 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.earningsPath,
           name: RouteConstant.earnings,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => EarningsViewModel(),
+            return BlocProvider(
+              create: (_) => EarningsCubit(),
               child: const EarningsPage(),
             );
           },
@@ -244,31 +234,31 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           path: RouteConstant.hostAccountPath,
           name: RouteConstant.hostAccount,
           builder: (context, state) {
-            return ChangeNotifierProvider(
-              create: (_) => AccountViewModel(
+            return BlocProvider(
+              create: (_) => AccountCubit(
                 userRepository: context.read(),
                 authRepository: context.read(),
-                isInHostModel: true,
+                isInHostMode: true,
               ),
               child: const AccountScreen(),
             );
           },
         ),
       ],
-    )
+    ),
   ],
 );
 
 GoRoute _route(
-    String tag, {
-      GoRouterWidgetBuilder? builder,
-      GoRouterPageBuilder? pageBuilder,
-      List<RouteBase> routes = const [],
-      GlobalKey<NavigatorState>? parentNavigatorKey,
-      GoRouterRedirect? redirect,
-      ExitCallback? onExit,
-      bool caseSensitive = true,
-    }) {
+  String tag, {
+  GoRouterWidgetBuilder? builder,
+  GoRouterPageBuilder? pageBuilder,
+  List<RouteBase> routes = const [],
+  GlobalKey<NavigatorState>? parentNavigatorKey,
+  GoRouterRedirect? redirect,
+  ExitCallback? onExit,
+  bool caseSensitive = true,
+}) {
   return GoRoute(
     path: tag,
     name: tag,
@@ -288,13 +278,8 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   if (!loggedIn) {
     return RouteConstant.logInPath;
   }
-
-  // if the user is logged in but still on the login page, send them to
-  // the home page
   if (loggingIn) {
     return RouteConstant.explorePath;
   }
-
-  // no need to redirect at all
   return null;
 }

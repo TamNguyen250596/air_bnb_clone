@@ -1,42 +1,34 @@
 import 'dart:io';
 import 'package:air_bnb_clone/commons/widgets/custom_app_bar.dart';
 import 'package:air_bnb_clone/data/models/place/place.dart';
-import 'package:air_bnb_clone/modules/host/update_posting/update_posting_viewmodel.dart';
+import 'package:air_bnb_clone/modules/host/update_posting/update_posting_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../../../commons/widgets/facilities_widget.dart';
 import '../../../routing/route_id.dart';
 
 class UpdatePostingScreen extends StatefulWidget {
-  // Init
   const UpdatePostingScreen({super.key});
-
-  // Properties
 
   @override
   State<UpdatePostingScreen> createState() => _UpdatePostingScreenState();
 }
 
 class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
-
-  // Form Key
   final _formKey = GlobalKey<FormState>();
-
-  // TextEditingControllers
   final TextEditingController _addressController = TextEditingController();
 
-  // Navigation
   Future<void> pushToSearchPropertyLocationScreen() async {
-    final vm = context.read<UpdatePostingViewModel>();
     final place = await context.pushNamed<Place>(
       RouteConstant.searchPropertyLocation,
     );
-    vm.updatePlace(place);
     if (place != null) {
+      context.read<UpdatePostingCubit>().updatePlace(place);
+      final state = context.read<UpdatePostingCubit>().state;
       setState(() {
-        _addressController.text = vm.address;
+        _addressController.text = state.address;
       });
     }
   }
@@ -45,17 +37,20 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
     context.pop();
   }
 
-  // Life cycle
   @override
   void initState() {
     super.initState();
-    final vm = context.read<UpdatePostingViewModel>();
-    _addressController.value = TextEditingValue(text: vm.address);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final state = context.read<UpdatePostingCubit>().state;
+        _addressController.text = state.address;
+      }
+    });
   }
 
-  // ========== Build Method ==========
-  List<Widget> _appBarActions(UpdatePostingViewModel viewModel) {
-    if (viewModel.isLoading) {
+  List<Widget> _appBarActions(UpdatePostingState state) {
+    final cubit = context.read<UpdatePostingCubit>();
+    if (state.isLoading) {
       return [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -69,44 +64,38 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
           ),
         ),
       ];
-    } else {
-      return [
-        IconButton(
-          icon: const Icon(Icons.upload_file_outlined, color: Colors.white),
-          onPressed: () async {
-            final isSuccess = await viewModel.createPosting(_formKey);
-            if (isSuccess) {
-              popBack();
-            }
-          },
-        ),
-      ];
     }
+    return [
+      IconButton(
+        icon: const Icon(Icons.upload_file_outlined, color: Colors.white),
+        onPressed: () async {
+          final isSuccess = await cubit.createPosting(_formKey);
+          if (isSuccess && mounted) popBack();
+        },
+      ),
+    ];
   }
 
-  // ========== Form Field Widgets ==========
   Widget _postingNameField() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
         return TextFormField(
           decoration: const InputDecoration(labelText: "Posting Name"),
           style: const TextStyle(fontSize: 22.0, color: Colors.white),
-          initialValue: viewModel.name,
-          onChanged: (text) {
-            viewModel.updateName(text);
-          },
-          validator: (text) {
-            return viewModel.validatePostingNameField(text);
-          },
+          initialValue: state.name,
+          onChanged: cubit.updateName,
+          validator: cubit.validatePostingNameField,
         );
       },
     );
   }
 
   Widget _propertyTypeDropdown() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
-        final propertyTypes = viewModel.propertyTypes.map((type) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
+        final propertyTypes = state.propertyTypes.map((type) {
           return DropdownMenuItem(
             value: type,
             child: Text(
@@ -133,11 +122,9 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
               child: DropdownButton<String>(
                 dropdownColor: Colors.grey[900],
                 items: propertyTypes,
-                onChanged: (value) {
-                  viewModel.updatePropertyTypeChosen(value);
-                },
+                onChanged: cubit.updatePropertyTypeChosen,
                 isExpanded: true,
-                value: viewModel.propertyTypeChosen,
+                value: state.propertyTypeChosen,
                 hint: const Text(
                   "Select property type",
                   style: TextStyle(fontSize: 20, color: Colors.white70),
@@ -151,25 +138,22 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
   }
 
   Widget _priceField() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
         return Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
+            children: [
               Expanded(
                 child: TextFormField(
                   decoration: const InputDecoration(labelText: "Price"),
                   style: const TextStyle(fontSize: 22.0, color: Colors.white),
                   keyboardType: TextInputType.number,
-                  initialValue: viewModel.price,
-                  onChanged: (text) {
-                    viewModel.updatePrice(text);
-                  },
-                  validator: (text) {
-                    return viewModel.validatePriceNameField(text);
-                  },
+                  initialValue: state.price,
+                  onChanged: cubit.updatePrice,
+                  validator: cubit.validatePriceNameField,
                 ),
               ),
               const Padding(
@@ -187,22 +171,19 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
   }
 
   Widget _descriptionField() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
         return Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: TextFormField(
             decoration: const InputDecoration(labelText: "Description"),
             style: const TextStyle(fontSize: 22.0, color: Colors.white),
-            initialValue: viewModel.description,
-            onChanged: (text) {
-              viewModel.updateDescription(text);
-            },
+            initialValue: state.description,
+            onChanged: cubit.updateDescription,
             maxLines: 3,
             minLines: 1,
-            validator: (text) {
-              return viewModel.validateDescriptionField(text);
-            },
+            validator: cubit.validateDescriptionField,
           ),
         );
       },
@@ -210,14 +191,12 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
   }
 
   Widget _addressField() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
         return Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: GestureDetector(
-            onTap: () async {
-              await pushToSearchPropertyLocationScreen();
-            },
+            onTap: pushToSearchPropertyLocationScreen,
             child: TextFormField(
               enabled: false,
               controller: _addressController,
@@ -231,7 +210,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
                 ),
               ),
               validator: (text) {
-                if (text!.isEmpty) {
+                if (text == null || text.isEmpty) {
                   return "Please enter a valid address";
                 }
                 return null;
@@ -243,10 +222,10 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
     );
   }
 
-
   Widget _bedsSection() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -263,24 +242,18 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
             ),
             FacilitiesWidget(
               type: 'Twin/Single',
-              startValue: viewModel.geBedNo("small"),
-              onValueChanged: (value) {
-                viewModel.updateBedNo("small", value);
-              },
+              startValue: cubit.getBedNo("small"),
+              onValueChanged: (value) => cubit.updateBedNo("small", value),
             ),
             FacilitiesWidget(
               type: 'Double',
-              startValue: viewModel.geBedNo("medium"),
-              onValueChanged: (value) {
-                viewModel.updateBedNo("medium", value);
-              },
+              startValue: cubit.getBedNo("medium"),
+              onValueChanged: (value) => cubit.updateBedNo("medium", value),
             ),
             FacilitiesWidget(
               type: 'Queen/King',
-              startValue: viewModel.geBedNo("large"),
-              onValueChanged: (value) {
-                viewModel.updateBedNo("large", value);
-              }
+              startValue: cubit.getBedNo("large"),
+              onValueChanged: (value) => cubit.updateBedNo("large", value),
             ),
           ],
         );
@@ -288,13 +261,10 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
     );
   }
 
-  Widget _bedsSpacing() {
-    return const SizedBox(height: 16);
-  }
-
   Widget _bathroomsSection() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -311,17 +281,13 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
             ),
             FacilitiesWidget(
               type: 'Full',
-              startValue: viewModel.geBathroomNo("full"),
-              onValueChanged: (value) {
-                viewModel.updateBathroomNo("full", value);
-              }
+              startValue: cubit.getBathroomNo("full"),
+              onValueChanged: (value) => cubit.updateBathroomNo("full", value),
             ),
             FacilitiesWidget(
               type: 'Half',
-              startValue: viewModel.geBathroomNo("half"),
-              onValueChanged: (value) {
-                viewModel.updateBathroomNo("half", value);
-              }
+              startValue: cubit.getBathroomNo("half"),
+              onValueChanged: (value) => cubit.updateBathroomNo("half", value),
             ),
           ],
         );
@@ -330,24 +296,19 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
   }
 
   Widget _amenitiesField() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
         return Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: TextFormField(
             decoration: const InputDecoration(
-                labelText: "Amenities (comma separated)"),
-            style: const TextStyle(
-              fontSize: 22.0,
-              color: Colors.white,
+              labelText: "Amenities (comma separated)",
             ),
-            initialValue: viewModel.amenities,
-            onChanged: (text) {
-              viewModel.updateAmenities(text);
-            },
-            validator: (text) {
-              return viewModel.validateAmenitiesField(text);
-            },
+            style: const TextStyle(fontSize: 22.0, color: Colors.white),
+            initialValue: state.amenities,
+            onChanged: cubit.updateAmenities,
+            validator: cubit.validateAmenitiesField,
             maxLines: 3,
             minLines: 1,
           ),
@@ -357,9 +318,10 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
   }
 
   Widget _photosSection() {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
-        final imageItems = viewModel.imageItems;
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
+        final cubit = context.read<UpdatePostingCubit>();
+        final imageItems = state.imageItems;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,8 +341,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: imageItems.length,
-              gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 25,
                 crossAxisSpacing: 25,
@@ -394,16 +355,12 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
                       color: Colors.grey[900],
                       child: IconButton(
                         icon: const Icon(Icons.add, color: Colors.white),
-                        onPressed: () {
-                          viewModel.selectImage(item);
-                        },
+                        onPressed: () => cubit.selectImage(item),
                       ),
                     );
                   case "remote_image":
                     return MaterialButton(
-                      onPressed: () {
-                        viewModel.selectImage(item);
-                      },
+                      onPressed: () => cubit.selectImage(item),
                       child: CachedNetworkImage(
                         imageUrl: item.imageUrl,
                         fit: BoxFit.fill,
@@ -411,9 +368,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
                     );
                   case "local_image":
                     return MaterialButton(
-                      onPressed: () {
-                        viewModel.selectImage(item);
-                      },
+                      onPressed: () => cubit.selectImage(item),
                       child: Image.file(
                         File(item.imageUrl),
                         fit: BoxFit.fill,
@@ -454,7 +409,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
             _descriptionField(),
             _addressField(),
             _bedsSection(),
-            _bedsSpacing(),
+            const SizedBox(height: 16),
             _bathroomsSection(),
             _amenitiesField(),
             _photosSection(),
@@ -466,14 +421,12 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UpdatePostingViewModel>(
-      builder: (context, viewModel, child) {
+    return BlocBuilder<UpdatePostingCubit, UpdatePostingState>(
+      builder: (context, state) {
         return Scaffold(
           appBar: CustomAppBar(
-            title: viewModel.posting == null
-                ? "Add New Posting"
-                : "Update Posting",
-            actions: _appBarActions(viewModel),
+            title: state.posting == null ? "Add New Posting" : "Update Posting",
+            actions: _appBarActions(state),
           ),
           body: Center(
             child: SingleChildScrollView(
