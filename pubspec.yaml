@@ -9,6 +9,24 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
+  cloud_firestore: ^6.1.0
+  image_picker: ^1.2.1
+  flutter_image_compress: ^2.4.0
+  path_provider: ^2.1.5
+  provider: ^6.1.5+1
+  bloc: ^9.0.0
+  flutter_bloc: ^9.1.1
+  http: ^1.6.0
+  shared_preferences: ^2.5.4
+  go_router: ^17.0.1
+  realm: ^20.2.0
+  rxdart: ^0.28.0
+  cached_network_image: ^3.4.1
+  uuid: ^4.4.0
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.0
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +35,31 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: ProximaNova
+      fonts:
+        - asset: assets/fonts/ProximaNova-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/ProximaNova-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/ProximaNova-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/ProximaNova-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/ProximaNova-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/ProximaNova-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/ProximaNova-SemiBoldIt.ttf
+          weight: 600
+          style: italic
+        - asset: assets/fonts/ProximaNova-BoldIt.ttf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/ProximaNova-ExtraBoldIt.ttf
+          weight: 800
+          style: italic
