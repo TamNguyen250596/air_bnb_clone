@@ -5,9 +5,17 @@ import '../services/firestore/firestore_constant.dart';
 import '../services/realm/realm_service.dart';
 import '../services/realm/realm_query_builder.dart';
 
-class UserRepository {
+/// Abstract contract for user data. Use [UserRepositoryImpl] in app and a fake in unit tests.
+abstract class UserRepository {
+  Future<User> createUser(String id, Map<String, dynamic> data);
+  Future<User> getUser(String id);
+  Stream<User> observeUser(String id);
+  Future<User> updateUser(String id, Map<String, dynamic> data);
+}
+
+class UserRepositoryImpl implements UserRepository {
   // Init
-  UserRepository({
+  UserRepositoryImpl({
     required FireStoreService fireStoreService,
     required RealmService realmManager,
   }) : _fireStoreService = fireStoreService,
@@ -18,6 +26,7 @@ class UserRepository {
   final RealmService _realmManager;
 
   // Functions
+  @override
   Future<User> createUser(String id, Map<String, dynamic> data) async {
     try {
       await _fireStoreService.createDoc<User>(FirestoreCollection.user, id, data);
@@ -32,6 +41,7 @@ class UserRepository {
     }
   }
 
+  @override
   Future<User> getUser(String id) async {
     try {
       final doc = await _fireStoreService.getDoc<User>(FirestoreCollection.user, id);
@@ -49,6 +59,7 @@ class UserRepository {
     }
   }
 
+  @override
   Stream<User> observeUser(String id) {
     try {
       // Set up Firestore listener (updates Realm automatically)
@@ -71,6 +82,7 @@ class UserRepository {
     }
   }
 
+  @override
   Future<User> updateUser(String id, Map<String, dynamic> data) async {
     try {
       await _fireStoreService.updateDoc<User>(FirestoreCollection.user, id, data);

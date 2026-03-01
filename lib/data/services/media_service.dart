@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:air_bnb_clone/commons/constants/api_credential.dart';
+import 'package:air_bnb_clone/commons/constants/app_constants.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
@@ -25,10 +26,11 @@ class MediaService {
   }
 
   Future<String?> uploadImage(File file, String publicId) async {
-    final url = Uri.parse('https://api.cloudinary.com/v1_1/${ApiCredential.cloudinaryAppName}/upload');
+    final cloudName = dotenv.env[AppConstants.cloudinaryAppName]!;
+    final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/upload');
 
     final request = http.MultipartRequest('POST', url);
-    request.fields['upload_preset'] = ApiCredential.cloudinaryUploadPreset;
+    request.fields['upload_preset'] = AppConstants.cloudinaryUploadPreset;
     request.fields['public_id'] = publicId;
     request.files.add(await http.MultipartFile.fromPath('file', file.path));
 

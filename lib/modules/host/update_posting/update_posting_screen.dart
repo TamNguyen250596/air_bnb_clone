@@ -24,6 +24,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
     final place = await context.pushNamed<Place>(
       RouteConstant.searchPropertyLocation,
     );
+    if (!mounted) return;
     if (place != null) {
       context.read<UpdatePostingCubit>().updatePlace(place);
       final state = context.read<UpdatePostingCubit>().state;
@@ -48,8 +49,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
     });
   }
 
-  List<Widget> _appBarActions(UpdatePostingState state) {
-    final cubit = context.read<UpdatePostingCubit>();
+  List<Widget> _appBarActions(UpdatePostingState state, UpdatePostingCubit cubit) {
     if (state.isLoading) {
       return [
         const Padding(
@@ -426,7 +426,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
         return Scaffold(
           appBar: CustomAppBar(
             title: state.posting == null ? "Add New Posting" : "Update Posting",
-            actions: _appBarActions(state),
+            actions: _appBarActions(state, context.read<UpdatePostingCubit>()),
           ),
           body: Center(
             child: SingleChildScrollView(

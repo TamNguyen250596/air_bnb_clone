@@ -8,10 +8,18 @@ import '../services/firestore/firestore_constant.dart';
 import '../services/firestore/firestore_query_builder.dart';
 import '../services/realm/realm_query_builder.dart';
 
-class PostingRepository {
+/// Abstract contract for postings. Use [PostingRepositoryImpl] in app and a fake in unit tests.
+abstract class PostingRepository {
+  Future<Posting> createPosting(Map<String, dynamic> data);
+  Future<RealmResults<Posting>> getPostingsForExplore(String searchTxt);
+  Future<RealmResults<Posting>> getPostings(String hostId, String searchTxt);
+  Stream<RealmResultsChanges<Posting>> observePostings(String hostId);
+  Future<Posting> updatePosting(String id, Map<String, dynamic> data);
+}
 
+class PostingRepositoryImpl implements PostingRepository {
   // Init
-  PostingRepository({
+  PostingRepositoryImpl({
     required FireStoreService firestoreService,
     required RealmService realmManager,
   }) : _firestoreService = firestoreService,
@@ -22,6 +30,7 @@ class PostingRepository {
   final RealmService _realmManager;
 
   // Create
+  @override
   Future<Posting> createPosting(Map<String, dynamic> data) async {
     try {
       final id = await _firestoreService.createDoc<Posting>(FirestoreCollection.posting, null, data);
@@ -37,6 +46,7 @@ class PostingRepository {
   }
 
   // Read
+  @override
   Future<RealmResults<Posting>> getPostingsForExplore(String searchTxt) async {
     try {
       Filter? filter;
@@ -67,6 +77,7 @@ class PostingRepository {
     }
   }
 
+  @override
   Future<RealmResults<Posting>> getPostings(String hostId, String searchTxt) async {
     try {
       Filter? filter;
@@ -106,7 +117,8 @@ class PostingRepository {
     }
   }
 
-   Stream<RealmResultsChanges<Posting>> observePostings(String hostId) {
+  @override
+  Stream<RealmResultsChanges<Posting>> observePostings(String hostId) {
     try {
       _firestoreService.observeCollection<Posting>(
           FirestoreQueryBuilder(FirestoreCollection.posting)
@@ -132,6 +144,7 @@ class PostingRepository {
   }
 
   // Update
+  @override
   Future<Posting> updatePosting(String id, Map<String, dynamic> data) async {
     try {
       await _firestoreService.updateDoc<Posting>(FirestoreCollection.posting, id, data);

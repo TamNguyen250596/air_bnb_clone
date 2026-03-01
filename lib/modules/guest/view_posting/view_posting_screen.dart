@@ -23,6 +23,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
     final Map<String, dynamic> extra = {
       "name": state.name,
       "dates": Map<String, DateTime>.from(state.bookingTimeMap),
+      "posting": cubit.posting
     };
 
     final bookingTimeMap = await context.pushNamed<Map<String, DateTime>>(

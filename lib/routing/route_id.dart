@@ -4,6 +4,9 @@ abstract class RouteConstant {
   static final String logIn = "log_in";
   static final String logInPath = "/${RouteConstant.logIn}";
   static final String signUp = "sign_up";
+  static final Set<String> nonAuthPaths = {
+    "${RouteConstant.logInPath}/${RouteConstant.signUp}"
+  };
 
   /// Guest
   static final String explore = "explore";

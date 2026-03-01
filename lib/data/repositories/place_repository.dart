@@ -1,16 +1,22 @@
 import 'dart:convert';
-import 'package:air_bnb_clone/commons/constants/api_credential.dart';
+import 'package:air_bnb_clone/commons/constants/app_constants.dart';
 import 'package:air_bnb_clone/data/models/place/place.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import '../../commons/constants/app_constants.dart';
 
-class PlaceRepository {
+/// Abstract contract for place search. Implement this interface for production
+/// and use a [FakePlaceRepository] (or mock) in unit tests.
+abstract class PlaceRepository {
+  Future<List<Place>> getPlaces(String searchTxt);
+}
 
+class PlaceRepositoryImpl implements PlaceRepository {
+  @override
   Future<List<Place>> getPlaces(String searchTxt) async {
     final uri = Uri.https(
         AppConstants.geoAPIfyDomain,
         AppConstants.geoAPIfyPath,
-        {'text': searchTxt, 'apiKey': ApiCredential.geoAPIfyApiKey}
+        {'text': searchTxt, 'apiKey': dotenv.env[AppConstants.geoAPIfyApiKey]!}
     );
     http.Response response = await http.get(uri);
 

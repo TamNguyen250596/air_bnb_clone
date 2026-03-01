@@ -98,7 +98,11 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                   builder: (context, state) {
                     final parameters = state.extra as Map<String, dynamic>;
                     return BlocProvider(
-                      create: (_) => BookPostingCubit(parameters: parameters),
+                      create: (_) => BookPostingCubit(
+                          parameters: parameters,
+                          authRepository: context.read(),
+                          stripePaymentIntentRepository: context.read()
+                      ),
                       child: const BookPostingScreen(),
                     );
                   },
@@ -276,7 +280,11 @@ Future<String?> _redirect(BuildContext context, GoRouterState state) async {
   final loggedIn = await context.read<AuthRepository>().isAuthenticated;
   final loggingIn = state.matchedLocation == RouteConstant.logInPath;
   if (!loggedIn) {
-    return RouteConstant.logInPath;
+    if (RouteConstant.nonAuthPaths.contains(state.matchedLocation)) {
+      return null;
+    } else {
+      return RouteConstant.logInPath;
+    }
   }
   if (loggingIn) {
     return RouteConstant.explorePath;

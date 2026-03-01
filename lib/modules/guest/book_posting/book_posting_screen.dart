@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' hide PaymentIntent;
 import 'package:go_router/go_router.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
+import '../../../commons/widgets/text_snack_bar.dart';
+import '../../../data/models/stripe/payment_intent.dart';
 import 'book_posting_cubit.dart';
 
 class BookPostingScreen extends StatefulWidget {
@@ -12,6 +15,20 @@ class BookPostingScreen extends StatefulWidget {
 }
 
 class _BookPostingScreenState extends State<BookPostingScreen> {
+
+  Future<void> _presentStripePaymentSheet(PaymentIntent paymentIntent) async {
+    await Stripe.instance.initPaymentSheet(
+      paymentSheetParameters: SetupPaymentSheetParameters(
+        customFlow: false,
+        merchantDisplayName: 'AirBnB Clone',
+        paymentIntentClientSecret: paymentIntent.clientSecret,
+        customerId: paymentIntent.id,
+        style: ThemeMode.dark,
+      ),
+    );
+    await Stripe.instance.presentPaymentSheet();
+  }
+
   void _popBack() {
     final state = context.read<BookPostingCubit>().state;
     context.pop(state.dates);
@@ -80,12 +97,12 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
     return BlocBuilder<BookPostingCubit, BookPostingState>(
       builder: (context, state) {
         return MaterialButton(
-          onPressed: state.canBook ? _popBack : null,
+          onPressed: state.canBook ? context.read<BookPostingCubit>().book : null,
           minWidth: double.infinity,
           height: MediaQuery.of(context).size.height / 16,
           color: Colors.green,
           disabledColor: Colors.grey,
-          child: const Text('Book Now', style: TextStyle(fontSize: 20)),
+          child: const Text('Book Now', style: TextStyle(fontSize: 20))
         );
       },
     );
@@ -93,26 +110,37 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _appBar(context),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
-        child: Column(
-          spacing: 20,
-          children: [
-            Row(
-              spacing: 10,
+    return BlocListener<BookPostingCubit, BookPostingState>(
+        listenWhen: (prev, curr) => curr.errorMessage != null || curr.paymentIntent != null,
+        listener: (context, state) async {
+          if (state.errorMessage != null) {
+            TextSnackBar.show(context, state.errorMessage!);
+          }
+          if (state.paymentIntent != null) {
+            await _presentStripePaymentSheet(state.paymentIntent!);
+          }
+        },
+        child: Scaffold(
+          appBar: _appBar(context),
+          body: Padding(
+            padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
+            child: Column(
+              spacing: 20,
               children: [
-                _timeForm('check_in', 'Check-in'),
-                _timeForm('check_out', 'Check-out'),
+                Row(
+                  spacing: 10,
+                  children: [
+                    _timeForm('check_in', 'Check-in'),
+                    _timeForm('check_out', 'Check-out'),
+                  ],
+                ),
+                _calendar(),
+                const Spacer(),
+                _bookButton(),
               ],
             ),
-            _calendar(),
-            const Spacer(),
-            _bookButton(),
-          ],
-        ),
-      ),
+          ),
+        )
     );
   }
 }

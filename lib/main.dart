@@ -2,15 +2,28 @@ import 'package:air_bnb_clone/config/dependencies.dart';
 import 'package:air_bnb_clone/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
+import 'commons/constants/app_constants.dart';
 import 'firebase_options.dart';
 
 // ========== Entry Point ==========
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load .env before any dotenv.env access
+  await dotenv.load(fileName: '.env');
+
+  // Firebase
   await Firebase.initializeApp(
   options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Stripe
+  Stripe.publishableKey = dotenv.env[AppConstants.stripePublicKey]!;
+  await Stripe.instance.applySettings();
+
   runApp(MultiProvider(providers: providers, child: const MainApp()));
 }
 
