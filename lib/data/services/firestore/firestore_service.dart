@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:realm/realm.dart';
@@ -26,13 +27,16 @@ class FireStoreService {
         id = docRef.id;
         await docRef.set(data);
       } else {
+        if (data["id"] == null || data["id"] == "") {
+          data["id"] = id;
+        }
         await FirebaseFirestore.instance.doc("$collection/$id").set(data);
       }
       final realmObject = FirestoreMapper.fromMap<T>(data);
       _realmManager.createFromEntity(realmObject, update: true);
       return id;
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -102,10 +106,13 @@ class FireStoreService {
   Future<void> updateDoc<T extends RealmObject>(String collection, String id, Map<String, dynamic> data) async {
     try {
       await FirebaseFirestore.instance.doc("$collection/$id").update(data);
+      if (data["id"] == null || data["id"] == "") {
+        data["id"] = id;
+      }
       final realmObject = FirestoreMapper.fromMap<T>(data);
       _realmManager.createFromEntity(realmObject, update: true);
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }

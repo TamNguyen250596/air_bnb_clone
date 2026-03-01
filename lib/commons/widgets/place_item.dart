@@ -2,29 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/place/place.dart';
 
-class PlaceItem extends StatefulWidget {
+class PlaceItem extends StatelessWidget {
   const PlaceItem({
     super.key,
     required this.place,
     this.onPress,
   });
 
-  // Properties
   final Place place;
   final VoidCallback? onPress;
 
   @override
-  State<PlaceItem> createState() => _PlaceItemState();
-}
-
-class _PlaceItemState extends State<PlaceItem> {
-
-
-  // Build
-  @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: widget.onPress,
+      onPressed: onPress,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.grey[850],
         foregroundColor: Colors.white,
@@ -49,7 +40,7 @@ class _PlaceItemState extends State<PlaceItem> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.place.name.toString(),
+                    place.name.toString(),
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 16,
@@ -59,7 +50,7 @@ class _PlaceItemState extends State<PlaceItem> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    widget.place.country.toString(),
+                    place.country.toString(),
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 13,

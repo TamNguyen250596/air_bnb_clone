@@ -1,17 +1,26 @@
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:realm_dart/src/results.dart';
+import 'package:realm/realm.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/realm_models/posting/posting.dart';
 import '../services/firestore/firestore_constant.dart';
 import '../services/firestore/firestore_query_builder.dart';
 import '../services/realm/realm_query_builder.dart';
 
-class PostingRepository {
+/// Abstract contract for postings. Use [PostingRepositoryImpl] in app and a fake in unit tests.
+abstract class PostingRepository {
+  Future<Posting> createPosting(Map<String, dynamic> data);
+  Future<RealmResults<Posting>> getPostingsForExplore(String searchTxt);
+  Future<RealmResults<Posting>> getPostings(String hostId, String searchTxt);
+  Stream<RealmResultsChanges<Posting>> observePostings(String hostId);
+  Future<Posting> updatePosting(String id, Map<String, dynamic> data);
+}
 
+class PostingRepositoryImpl implements PostingRepository {
   // Init
-  PostingRepository({
+  PostingRepositoryImpl({
     required FireStoreService firestoreService,
     required RealmService realmManager,
   }) : _firestoreService = firestoreService,
@@ -22,6 +31,7 @@ class PostingRepository {
   final RealmService _realmManager;
 
   // Create
+  @override
   Future<Posting> createPosting(Map<String, dynamic> data) async {
     try {
       final id = await _firestoreService.createDoc<Posting>(FirestoreCollection.posting, null, data);
@@ -31,12 +41,13 @@ class PostingRepository {
       }
       return createdPosting;
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
 
   // Read
+  @override
   Future<RealmResults<Posting>> getPostingsForExplore(String searchTxt) async {
     try {
       Filter? filter;
@@ -62,11 +73,12 @@ class PostingRepository {
       }
       return await _realmManager.getEntities<Posting>(realmQuery);
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
 
+  @override
   Future<RealmResults<Posting>> getPostings(String hostId, String searchTxt) async {
     try {
       Filter? filter;
@@ -101,12 +113,13 @@ class PostingRepository {
       );
       return entities;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
 
-   Stream<RealmResultsChanges<Posting>> observePostings(String hostId) {
+  @override
+  Stream<RealmResultsChanges<Posting>> observePostings(String hostId) {
     try {
       _firestoreService.observeCollection<Posting>(
           FirestoreQueryBuilder(FirestoreCollection.posting)
@@ -126,12 +139,13 @@ class PostingRepository {
 
       return localPostingStream;
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
 
   // Update
+  @override
   Future<Posting> updatePosting(String id, Map<String, dynamic> data) async {
     try {
       await _firestoreService.updateDoc<Posting>(FirestoreCollection.posting, id, data);
@@ -141,7 +155,7 @@ class PostingRepository {
       }
       return updatedPosting;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }

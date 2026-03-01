@@ -5,16 +5,23 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import '../services/media_service.dart';
 
-class MediaRepository {
+/// Abstract contract for media (pick, upload). Use [MediaRepositoryImpl] in app and a fake in unit tests.
+abstract class MediaRepository {
+  Future<File?> pickImageFromGallery(int? compressQuality);
+  Future<File?> takePhoto(int? compressQuality);
+  Future<String?> uploadImage(File file, String publicId);
+}
 
+class MediaRepositoryImpl implements MediaRepository {
   // Init
-  MediaRepository({required MediaService mediaService})
+  MediaRepositoryImpl({required MediaService mediaService})
     : _mediaService = mediaService;
 
   // Properties
   final MediaService _mediaService;
 
   // Functions
+  @override
   Future<File?> pickImageFromGallery(int? compressQuality) async {
     final xFile = await _mediaService.pickImageFromGallery();
     if (xFile == null) {
@@ -23,6 +30,7 @@ class MediaRepository {
     return _processImageFile(xFile, compressQuality);
   }
 
+  @override
   Future<File?> takePhoto(int? compressQuality) async {
     final xFile = await _mediaService.takePhoto();
     if (xFile == null) {
@@ -54,6 +62,7 @@ class MediaRepository {
     }
   }
 
+  @override
   Future<String?> uploadImage(File file, String publicId) {
     return _mediaService.uploadImage(file, publicId);
   }

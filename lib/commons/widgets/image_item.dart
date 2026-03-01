@@ -2,19 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/item/base_item_model.dart';
 
-class ImageItem extends StatefulWidget {
-  // Init
+class ImageItem extends StatelessWidget {
   const ImageItem({super.key, required this.item});
 
-  // Properties
   final BaseItemModel item;
 
-  // Functions
-  @override
-  State<ImageItem> createState() => _ImageItemState();
-}
-
-class _ImageItemState extends State<ImageItem> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -24,7 +16,7 @@ class _ImageItemState extends State<ImageItem> {
         spacing: 16,
         children: [
           CachedNetworkImage(
-            imageUrl: widget.item.imageUrl,
+            imageUrl: item.imageUrl,
             width: 80.0,
             height: 80.0,
             fit: BoxFit.cover,
@@ -41,7 +33,7 @@ class _ImageItemState extends State<ImageItem> {
             ),
           ),
           Text(
-            widget.item.title,
+            item.title,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ]

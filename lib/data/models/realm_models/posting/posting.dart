@@ -3,7 +3,7 @@ import '../user/user.dart';
 part 'posting.realm.dart';
 
 @RealmModel()
-class _Posting {
+class $Posting {
   @PrimaryKey()
   late String id;
 

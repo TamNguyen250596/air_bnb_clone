@@ -2,7 +2,7 @@ class RealmQueryBuilder {
 
   int _queryNumber = 0;
   String _queryString = "";
-  final List<String> _queryValues = <String>[];
+  final List<dynamic> _queryValues = <dynamic>[];
 
   RealmQueryBuilder equal(String field, dynamic value) {
     if (_queryNumber > 0) {
@@ -19,6 +19,26 @@ class RealmQueryBuilder {
       _queryString += " AND ";
     }
     _queryString += "$field LIKE " "\$$_queryNumber";
+    _queryValues.add(value);
+    _queryNumber++;
+    return this;
+  }
+
+  RealmQueryBuilder greaterThanOrEqualTo(String field, dynamic value) {
+    if (_queryNumber > 0) {
+      _queryString += " AND ";
+    }
+    _queryString += "$field >= \$$_queryNumber";
+    _queryValues.add(value);
+    _queryNumber++;
+    return this;
+  }
+
+  RealmQueryBuilder lessThan(String field, dynamic value) {
+    if (_queryNumber > 0) {
+      _queryString += " AND ";
+    }
+    _queryString += "$field < \$$_queryNumber";
     _queryValues.add(value);
     _queryNumber++;
     return this;
