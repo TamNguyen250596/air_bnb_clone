@@ -2,11 +2,20 @@ import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_query_builder.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_relationship_mapper.dart';
 import 'package:realm/realm.dart';
+import '../../models/realm_models/booking/booking.dart';
+import '../../models/realm_models/conversation/conversation.dart';
+import '../../models/realm_models/message/message.dart';
 import '../../models/realm_models/user/user.dart';
 
 class RealmService {
   var config = Configuration.local(
-    [User.schema, Posting.schema],
+    [
+      User.schema,
+      Posting.schema,
+      Booking.schema,
+      Message.schema,
+      Conversation.schema,
+    ],
     schemaVersion: 2,
     shouldDeleteIfMigrationNeeded: true,
   );

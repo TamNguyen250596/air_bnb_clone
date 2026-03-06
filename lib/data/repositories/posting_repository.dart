@@ -1,7 +1,7 @@
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:realm_dart/src/results.dart';
+import 'package:realm/realm.dart';
 import 'package:rxdart/rxdart.dart';
 import '../models/realm_models/posting/posting.dart';
 import '../services/firestore/firestore_constant.dart';

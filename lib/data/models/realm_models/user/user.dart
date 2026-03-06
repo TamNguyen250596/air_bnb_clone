@@ -16,4 +16,5 @@ class $User {
   String? imageUrl;
   bool? isHost;
   bool isCurrentlyHosting = false;
+  double? earning;
 }

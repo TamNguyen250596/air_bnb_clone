@@ -26,6 +26,9 @@ class FireStoreService {
         id = docRef.id;
         await docRef.set(data);
       } else {
+        if (data["id"] == null || data["id"] == "") {
+          data["id"] = id;
+        }
         await FirebaseFirestore.instance.doc("$collection/$id").set(data);
       }
       final realmObject = FirestoreMapper.fromMap<T>(data);
@@ -102,6 +105,9 @@ class FireStoreService {
   Future<void> updateDoc<T extends RealmObject>(String collection, String id, Map<String, dynamic> data) async {
     try {
       await FirebaseFirestore.instance.doc("$collection/$id").update(data);
+      if (data["id"] == null || data["id"] == "") {
+        data["id"] = id;
+      }
       final realmObject = FirestoreMapper.fromMap<T>(data);
       _realmManager.createFromEntity(realmObject, update: true);
     } catch(e) {

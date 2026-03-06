@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../commons/constants/app_constants.dart';
-import '../../routing/route_id.dart';
+import '../../../commons/constants/app_constants.dart';
+import '../../guest/home/current_user_cubit.dart';
+import '../../../routing/route_id.dart';
 
 class HostHomeScreen extends StatefulWidget {
   const HostHomeScreen({super.key, required this.child});
@@ -71,10 +73,12 @@ class _HostHomeScreenState extends State<HostHomeScreen> {
     ];
 
     final isMainRoute = mainRoutes.contains(topRoute);
-    
-    return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: isMainRoute ? BottomNavigationBar(
+
+    return BlocBuilder<CurrentUserCubit, CurrentUserState>(
+      builder: (context, userState) {
+        return Scaffold(
+          body: widget.child,
+          bottomNavigationBar: isMainRoute ? BottomNavigationBar(
         onTap: _onItemTapped,
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
@@ -85,6 +89,8 @@ class _HostHomeScreenState extends State<HostHomeScreen> {
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
         items: _items,
       ) : null,
+        );
+      },
     );
   }
 }

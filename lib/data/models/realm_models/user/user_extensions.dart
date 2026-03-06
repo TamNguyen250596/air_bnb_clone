@@ -15,6 +15,7 @@ extension UserFirestoreExtension on User {
       if (lastName != null) 'last_name': lastName,
       if (fullName != null) 'full_name': fullName,
       if (imageUrl != null) 'image_url': imageUrl,
+      if (earning != null) 'earning': earning,
       'is_host': isHost,
       'is_currently_hosting': isCurrentlyHosting,
     };
@@ -43,6 +44,7 @@ class UserFirestoreHelper {
       imageUrl: data['image_url'],
       isHost: data['is_host'],
       isCurrentlyHosting: data['is_currently_hosting'] ?? false,
+      earning: data['earning'],
     );
   }
 }

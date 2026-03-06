@@ -2,6 +2,7 @@ import 'package:air_bnb_clone/routing/route_id.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import '../modules/guest/home/current_user_cubit.dart';
 import '../data/models/realm_models/posting/posting.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/place_repository.dart';
@@ -13,7 +14,7 @@ import '../modules/guest/book_posting/book_posting_cubit.dart';
 import '../modules/guest/book_posting/book_posting_screen.dart';
 import '../modules/guest/explore/explore_cubit.dart';
 import '../modules/guest/explore/explore_screen.dart';
-import '../modules/guest/guest_home_screen.dart';
+import '../modules/guest/home/guest_home_screen.dart';
 import '../modules/guest/saved/saved_cubit.dart';
 import '../modules/guest/saved/saved_screen.dart';
 import '../modules/guest/trips/trips_cubit.dart';
@@ -24,7 +25,7 @@ import '../modules/guest/account/account_cubit.dart';
 import '../modules/guest/account/account_screen.dart';
 import '../modules/guest/view_posting/view_posting_cubit.dart';
 import '../modules/guest/view_posting/view_posting_screen.dart';
-import '../modules/host/host_home_screen.dart';
+import '../modules/host/home/host_home_screen.dart';
 import '../modules/host/bookings/bookings_cubit.dart';
 import '../modules/host/bookings/bookings_screen.dart';
 import '../modules/host/my_postings/my_postings_cubit.dart';
@@ -68,7 +69,13 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ),
     ShellRoute(
       builder: (context, state, child) {
-        return GuestHomeScreen(child: child);
+        return BlocProvider(
+          create: (_) => CurrentUserCubit(
+            authRepository: context.read(),
+            userRepository: context.read(),
+          ),
+          child: GuestHomeScreen(child: child),
+        );
       },
       routes: [
         GoRoute(
@@ -101,7 +108,11 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                       create: (_) => BookPostingCubit(
                           parameters: parameters,
                           authRepository: context.read(),
-                          stripePaymentIntentRepository: context.read()
+                          stripePaymentIntentRepository: context.read(),
+                          bookingRepository: context.read(),
+                          userRepository: context.read(),
+                          conversationRepository: context.read(),
+                          messageRepository: context.read(),
                       ),
                       child: const BookPostingScreen(),
                     );
@@ -158,7 +169,13 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ),
     ShellRoute(
       builder: (context, state, child) {
-        return HostHomeScreen(child: child);
+        return BlocProvider(
+          create: (_) => CurrentUserCubit(
+            authRepository: context.read(),
+            userRepository: context.read(),
+          ),
+          child: HostHomeScreen(child: child),
+        );
       },
       routes: [
         GoRoute(

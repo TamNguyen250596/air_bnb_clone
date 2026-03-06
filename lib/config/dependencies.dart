@@ -4,7 +4,10 @@ import 'package:air_bnb_clone/data/services/auth_service.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import '../data/repositories/booking_repository.dart';
+import '../data/repositories/conversation_repository.dart';
 import '../data/repositories/media_repository.dart';
+import '../data/repositories/message_repository.dart';
 import '../data/repositories/posting_repository.dart';
 import '../data/repositories/user_repository.dart';
 import '../data/repositories/stripe_payment_intent_repository.dart';
@@ -40,6 +43,27 @@ List<SingleChildWidget> get providers {
       PostingRepositoryImpl(
           firestoreService: context.read(),
           realmManager: context.read()
+      ),
+    ),
+    Provider<BookingRepository>(
+      create: (context) =>
+      BookingRepositoryImpl(
+        firestoreService: context.read(),
+        realmManager: context.read(),
+      ),
+    ),
+    Provider<ConversationRepository>(
+      create: (context) =>
+      ConversationRepositoryImpl(
+        firestoreService: context.read(),
+        realmManager: context.read(),
+      ),
+    ),
+    Provider<MessageRepository>(
+      create: (context) =>
+      MessageRepositoryImpl(
+        firestoreService: context.read(),
+        realmManager: context.read(),
       ),
     ),
     Provider<PlaceRepository>(create: (context) => PlaceRepositoryImpl()),

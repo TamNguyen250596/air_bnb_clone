@@ -6,8 +6,8 @@ class SharedPreferencesService {
 
   Future<String?> fetchToken() async {
     try {
-      final sharedPreferences = await SharedPreferences.getInstance();
-      return sharedPreferences.getString(_tokenKey);
+      final sharedPreferences = SharedPreferencesAsync();
+      return await sharedPreferences.getString(_tokenKey);
     } on Exception catch (_) {
       return null;
     }
@@ -15,11 +15,11 @@ class SharedPreferencesService {
 
   Future<void> saveToken(String? token) async {
     try {
-      final sharedPreferences = await SharedPreferences.getInstance();
+      final sharedPreferences = SharedPreferencesAsync();
       if (token == null) {
-        await sharedPreferences.remove(_tokenKey);
+        sharedPreferences.remove(_tokenKey);
       } else {
-        await sharedPreferences.setString(_tokenKey, token);
+        sharedPreferences.setString(_tokenKey, token);
       }
     } on Exception catch (_) {
       return;
@@ -28,8 +28,8 @@ class SharedPreferencesService {
 
   Future<void> removeToken() async {
     try {
-      final sharedPreferences = await SharedPreferences.getInstance();
-      await sharedPreferences.remove(_tokenKey);
+      final sharedPreferences = SharedPreferencesAsync();
+      sharedPreferences.remove(_tokenKey);
       } on Exception catch (_) {
       return;
     }

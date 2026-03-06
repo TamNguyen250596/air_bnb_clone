@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' hide PaymentIntent;
-import 'package:go_router/go_router.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
 import '../../../commons/widgets/text_snack_bar.dart';
 import '../../../data/models/stripe/payment_intent.dart';
@@ -27,11 +26,6 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
       ),
     );
     await Stripe.instance.presentPaymentSheet();
-  }
-
-  void _popBack() {
-    final state = context.read<BookPostingCubit>().state;
-    context.pop(state.dates);
   }
 
   PreferredSizeWidget _appBar(BuildContext context) {
@@ -96,13 +90,24 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
   Widget _bookButton() {
     return BlocBuilder<BookPostingCubit, BookPostingState>(
       builder: (context, state) {
+        final isSaving = state.isSaving;
+        final canPress = state.canBook && !isSaving;
         return MaterialButton(
-          onPressed: state.canBook ? context.read<BookPostingCubit>().book : null,
+          onPressed: canPress ? context.read<BookPostingCubit>().getPaymentIntent : null,
           minWidth: double.infinity,
           height: MediaQuery.of(context).size.height / 16,
           color: Colors.green,
           disabledColor: Colors.grey,
-          child: const Text('Book Now', style: TextStyle(fontSize: 20))
+          child: isSaving
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Book Now', style: TextStyle(fontSize: 20)),
         );
       },
     );
@@ -114,10 +119,18 @@ class _BookPostingScreenState extends State<BookPostingScreen> {
         listenWhen: (prev, curr) => curr.errorMessage != null || curr.paymentIntent != null,
         listener: (context, state) async {
           if (state.errorMessage != null) {
+            if (!mounted) return;
             TextSnackBar.show(context, state.errorMessage!);
           }
           if (state.paymentIntent != null) {
-            await _presentStripePaymentSheet(state.paymentIntent!);
+            final cubit = context.read<BookPostingCubit>();
+            final navigator = Navigator.of(context);
+            try {
+              await _presentStripePaymentSheet(state.paymentIntent!);
+              await cubit.saveBooking();
+              if (!mounted) return;
+              navigator.pop(cubit.state.dates);
+            } catch (_) {}
           }
         },
         child: Scaffold(

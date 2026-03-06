@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../../routing/route_id.dart';
+import 'current_user_cubit.dart';
+import '../../../routing/route_id.dart';
 
 class GuestHomeScreen extends StatefulWidget {
   const GuestHomeScreen({super.key, required this.child});
@@ -69,14 +71,18 @@ class _GuestScreenState extends State<GuestHomeScreen> {
 
     final isMainRoute = mainRoutes.contains(topRoute);
 
-    return Scaffold(
-      body: widget.child, // Display the child route
-      bottomNavigationBar: isMainRoute ? BottomNavigationBar(
+    return BlocBuilder<CurrentUserCubit, CurrentUserState>(
+      builder: (context, userState) {
+        return Scaffold(
+          body: widget.child, // Display the child route
+          bottomNavigationBar: isMainRoute ? BottomNavigationBar(
         onTap: _onItemTapped,
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
         items: _items,
       ) : null,
+        );
+      },
     );
   }
 }

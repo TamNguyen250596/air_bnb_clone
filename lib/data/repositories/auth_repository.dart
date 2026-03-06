@@ -116,7 +116,7 @@ class AuthRepositoryImpl extends AuthRepository {
       );
 
       await _userRepository.createUser(id, user.toFirestore());
-      _sharedPreferencesService.saveToken(id);
+      await _sharedPreferencesService.saveToken(id);
       _isAuthenticated = true;
       _userId = id;
     } else {
@@ -134,7 +134,7 @@ class AuthRepositoryImpl extends AuthRepository {
     if (firebaseUser.user != null) {
       final id = firebaseUser.user!.uid;
 
-      _sharedPreferencesService.saveToken(id);
+      await _sharedPreferencesService.saveToken(id);
       await _userRepository.getUser(id);
       _isAuthenticated = true;
       _userId = id;
