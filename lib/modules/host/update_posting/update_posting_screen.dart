@@ -20,7 +20,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _addressController = TextEditingController();
 
-  Future<void> pushToSearchPropertyLocationScreen() async {
+  Future<void> _pushToSearchPropertyLocationScreen() async {
     final place = await context.pushNamed<Place>(
       RouteConstant.searchPropertyLocation,
     );
@@ -34,7 +34,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
     }
   }
 
-  void popBack() {
+  void _popBack() {
     context.pop();
   }
 
@@ -70,7 +70,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
         icon: const Icon(Icons.upload_file_outlined, color: Colors.white),
         onPressed: () async {
           final isSuccess = await cubit.createPosting(_formKey);
-          if (isSuccess && mounted) popBack();
+          if (isSuccess && mounted) _popBack();
         },
       ),
     ];
@@ -196,7 +196,7 @@ class _UpdatePostingScreenState extends State<UpdatePostingScreen> {
         return Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: GestureDetector(
-            onTap: pushToSearchPropertyLocationScreen,
+            onTap: _pushToSearchPropertyLocationScreen,
             child: TextFormField(
               enabled: false,
               controller: _addressController,

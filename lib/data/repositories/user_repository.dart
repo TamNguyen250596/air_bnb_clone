@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:rxdart/rxdart.dart';
 import '../models/realm_models/user/user.dart';
 import '../services/firestore/firestore_service.dart';
@@ -36,7 +37,7 @@ class UserRepositoryImpl implements UserRepository {
       }
       return createdUser;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -54,7 +55,7 @@ class UserRepositoryImpl implements UserRepository {
       }
       return user;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -77,7 +78,7 @@ class UserRepositoryImpl implements UserRepository {
 
       return localUserStream;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -92,7 +93,7 @@ class UserRepositoryImpl implements UserRepository {
       }
       return updatedUser;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
 import 'package:air_bnb_clone/data/models/stripe/payment_intent.dart';
 import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
@@ -18,6 +19,7 @@ class BookPostingState {
     this.errorMessage,
     this.paymentIntent,
     this.isSaving = false,
+    this.unselectableDates = const <DateTime>{},
   })  : firstDate = firstDate ?? DateTime.now(),
         lastDate = lastDate ?? DateTime.now().add(const Duration(days: 210));
 
@@ -29,6 +31,7 @@ class BookPostingState {
   final String? errorMessage;
   final PaymentIntent? paymentIntent;
   final bool isSaving;
+  final Set<DateTime> unselectableDates;
 
   bool get canBook {
     final checkIn = dates["check_in"];
@@ -48,13 +51,15 @@ class BookPostingState {
     return outDate.difference(inDate).inDays;
   }
 
-  DateTime getInitialDate() => dates[currentTag] ?? DateTime.now();
-
   String getInitialDateStr(String tag) {
     DateTime? date = dates[tag];
     if (date == null && tag == "check_in") date = DateTime.now();
-    if (date != null) return "${date.day}/${date.month}/${date.year}";
+    if (date != null) return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
     return "";
+  }
+
+  bool isDaySelectable(DateTime day) {
+    return !unselectableDates.contains(day);
   }
 
   BookPostingState copyWith({
@@ -64,6 +69,7 @@ class BookPostingState {
     String? errorMessage,
     PaymentIntent? paymentIntent,
     bool? isSaving,
+    Set<DateTime>? unselectableDates,
   }) {
     return BookPostingState(
       name: name ?? this.name,
@@ -74,6 +80,7 @@ class BookPostingState {
       errorMessage: errorMessage,
       paymentIntent: paymentIntent,
       isSaving: isSaving ?? this.isSaving,
+      unselectableDates: unselectableDates ?? this.unselectableDates
     );
   }
 }
@@ -107,18 +114,55 @@ class BookPostingCubit extends Cubit<BookPostingState> {
   final ConversationRepository _conversationRepository;
   final MessageRepository _messageRepository;
 
-  void _setupInitialValues(Map<String, dynamic> parameters) {
+  Future<void> _setupInitialValues(Map<String, dynamic> parameters) async {
     final name = parameters["name"] as String? ?? "";
     final Map<String, DateTime>? datesParam = parameters["dates"] as Map<String, DateTime>?;
     final dates = (datesParam != null && datesParam.isNotEmpty)
         ? datesParam
         : {"check_in": DateTime.now()};
+    final unselectableDates = await _getUnselectableDates();
     emit(BookPostingState(
       name: name,
       dates: dates,
       firstDate: state.firstDate,
-      lastDate: state.lastDate
+      lastDate: state.lastDate,
+      unselectableDates: unselectableDates
     ));
+  }
+
+  Future<Set<DateTime>> _getUnselectableDates() async {
+    if (_posting == null) return <DateTime>{};
+    if (!_posting.isValid) return <DateTime>{};
+    final bookings = await _bookingRepository.getBookingsByPostingId(_posting.id);
+    if (bookings.isEmpty) return <DateTime>{};
+
+    Set<DateTime> bookedDates = <DateTime>{};
+    for (var booking in bookings) {
+      if (!booking.isValid) continue;
+      final checkIn = booking.checkIn;
+      if (checkIn == null) continue;
+      final checkOut = booking.checkOut;
+      if (checkOut == null) continue;
+      
+      final dates = _getDaysInBetween(checkIn, checkOut);
+      bookedDates.addAll(dates);
+    }
+
+    return bookedDates;
+  }
+
+  List<DateTime> _getDaysInBetween(DateTime startDate, DateTime endDate) {
+    List<DateTime> days = [];
+    for (int i = 0; i <= endDate.difference(startDate).inDays; i++) {
+      days.add(
+        DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day + i,
+        ),
+      );
+    }
+    return days;
   }
 
   void setCurrentTag(String tag) {
@@ -198,7 +242,7 @@ class BookPostingCubit extends Cubit<BookPostingState> {
       );
       emit(state.copyWith(isSaving: false));
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       emit(state.copyWith(
         isSaving: false,
         errorMessage: "Booking failed. Please try again.",

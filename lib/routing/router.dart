@@ -137,7 +137,9 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.trips,
           builder: (context, state) {
             return BlocProvider(
-              create: (_) => TripsCubit(),
+              create: (_) => TripsCubit(
+                bookingRepository: context.read()
+              ),
               child: const TripsScreen(),
             );
           },

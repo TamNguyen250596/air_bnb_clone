@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/models/realm_models/conversation/conversation.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_constant.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
@@ -35,7 +36,7 @@ class ConversationRepositoryImpl implements ConversationRepository {
       }
       return createdConversation;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -49,7 +50,7 @@ class ConversationRepositoryImpl implements ConversationRepository {
       );
       return await _realmManager.getEntity<Conversation>(id);
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -71,7 +72,7 @@ class ConversationRepositoryImpl implements ConversationRepository {
       }
       return updated;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }

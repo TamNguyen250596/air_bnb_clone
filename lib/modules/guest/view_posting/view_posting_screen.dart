@@ -9,15 +9,10 @@ import 'package:go_router/go_router.dart';
 import '../../../commons/widgets/posting_info_item.dart';
 import '../../../routing/route_id.dart';
 
-class ViewPostingScreen extends StatefulWidget {
+class ViewPostingScreen extends StatelessWidget {
   const ViewPostingScreen({super.key});
 
-  @override
-  State<ViewPostingScreen> createState() => _ViewPostingScreenState();
-}
-
-class _ViewPostingScreenState extends State<ViewPostingScreen> {
-  Future<void> _navigateToBookPosting() async {
+  Future<void> _navigateToBookPosting(BuildContext context) async {
     final cubit = context.read<ViewPostingCubit>();
     final state = cubit.state;
     final Map<String, dynamic> extra = {
@@ -143,7 +138,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
     );
   }
 
-  Widget _locationView() {
+  Widget _locationView(BuildContext context) {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
       builder: (context, state) {
         final center = state.propertyLatLong;
@@ -215,7 +210,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
     );
   }
 
-  Widget _hostCard() {
+  Widget _hostCard(BuildContext context) {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
       builder: (context, state) {
         final host = context.read<ViewPostingCubit>().posting.host;
@@ -268,7 +263,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
     );
   }
 
-  Widget _reviewSection() {
+  Widget _reviewSection(BuildContext context) {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
       builder: (context, state) {
         return _sectionCard("Reviews", Column(children: [
@@ -281,7 +276,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
     );
   }
 
-  Widget _bottomNavigationBar() {
+  Widget _bottomNavigationBar(BuildContext context) {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
       builder: (context, state) {
         return Container(
@@ -329,7 +324,7 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: _navigateToBookPosting,
+                        onPressed: () => _navigateToBookPosting(context),
                         child: const Text(
                           "Book Now",
                           style: TextStyle(fontSize: 16, color: Colors.white),
@@ -368,13 +363,13 @@ class _ViewPostingScreenState extends State<ViewPostingScreen> {
             _descriptionCard(),
             _sectionCard("Details", _postingInfoTiles()),
             _sectionCard("Amenities", _amenitiesView()),
-            _sectionCard("Location", _locationView()),
-            _reviewSection(),
-            _hostCard(),
+            _sectionCard("Location", _locationView(context)),
+            _reviewSection(context),
+            _hostCard(context),
           ],
         ),
       ),
-      bottomNavigationBar: _bottomNavigationBar(),
+      bottomNavigationBar: _bottomNavigationBar(context),
     );
   }
 }

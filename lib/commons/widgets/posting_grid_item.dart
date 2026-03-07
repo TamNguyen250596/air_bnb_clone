@@ -1,22 +1,14 @@
 import 'package:air_bnb_clone/commons/widgets/rating_bar.dart';
-import 'package:air_bnb_clone/data/models/item/base_item_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/item/posting_grid_item_model.dart';
 import '../constants/app_constants.dart';
 
-class PostingGridItem extends StatefulWidget {
+class PostingGridItem extends StatelessWidget {
   const PostingGridItem({super.key, required this.item});
 
   final PostingGridItemModel item;
 
-  @override
-  State<PostingGridItem> createState() => _PostingGridItemState();
-}
-
-class _PostingGridItemState extends State<PostingGridItem> {
-  // Content
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -25,17 +17,18 @@ class _PostingGridItemState extends State<PostingGridItem> {
       children: [
         AspectRatio(
           aspectRatio: 3 / 2,
-          child: (widget.item.imageUrl.isEmpty)
+          child: (item.imageUrl.isEmpty)
               ? Container()
               : CachedNetworkImage(
-                  imageUrl: widget.item.imageUrl,
-                  placeholder: (context, url) => SizedBox(
-                    height: 5.0,
-                    width: 5.0,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  fit: BoxFit.contain,
+            imageUrl: item.imageUrl,
+            placeholder: (context, url) =>
+                SizedBox(
+                  height: 5.0,
+                  width: 5.0,
+                  child: Center(child: CircularProgressIndicator()),
                 ),
+            fit: BoxFit.contain,
+          ),
         ),
 
         Container(
@@ -45,7 +38,7 @@ class _PostingGridItemState extends State<PostingGridItem> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.item.title,
+                item.title,
                 maxLines: 2,
                 style: const TextStyle(
                   fontSize: 12,
@@ -53,12 +46,12 @@ class _PostingGridItemState extends State<PostingGridItem> {
                 ),
               ),
               Text(
-                widget.item.des,
+                item.des,
                 maxLines: 1,
                 style: const TextStyle(fontSize: 14),
               ),
               Text(
-                widget.item.price,
+                item.price,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -75,7 +68,7 @@ class _PostingGridItemState extends State<PostingGridItem> {
               RatingBar.readOnly(
                 size: 28.0,
                 maxRating: 5,
-                initialRating: widget.item.rating,
+                initialRating: item.rating,
                 filledIcon: Icons.star,
                 emptyIcon: Icons.star_border,
                 filledColor: AppConstants.selectedIcon,
@@ -85,7 +78,7 @@ class _PostingGridItemState extends State<PostingGridItem> {
               ),
               const SizedBox(width: 5),
               Text(
-                widget.item.ratingStr,
+                item.ratingStr,
                 style: const TextStyle(color: Colors.white),
               ),
             ],

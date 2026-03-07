@@ -8,15 +8,10 @@ import '../../../data/models/realm_models/posting/posting.dart';
 import '../../../routing/route_id.dart';
 import 'my_postings_cubit.dart';
 
-class MyPostingsPage extends StatefulWidget {
+class MyPostingsPage extends StatelessWidget {
   const MyPostingsPage({super.key});
 
-  @override
-  State<MyPostingsPage> createState() => _MyPostingsPageState();
-}
-
-class _MyPostingsPageState extends State<MyPostingsPage> {
-  void _goToUpdatePostingScreen(Posting? posting) {
+  void _goToUpdatePostingScreen(BuildContext context, Posting? posting) {
     context.pushNamed(RouteConstant.updatePosting, extra: posting);
   }
 
@@ -24,11 +19,11 @@ class _MyPostingsPageState extends State<MyPostingsPage> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(25, 0, 25, 25),
       child: InkResponse(
-        onTap: () => _goToUpdatePostingScreen(null),
+        onTap: () => _goToUpdatePostingScreen(context, null),
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey, width: 1.0),
-            borderRadius: BorderRadius.circular(5.0),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: SizedBox(
             height: MediaQuery.of(context).size.height / 12,
@@ -45,15 +40,15 @@ class _MyPostingsPageState extends State<MyPostingsPage> {
     );
   }
 
-  Widget _item(BaseItemModel item) {
+  Widget _item(BuildContext context, BaseItemModel item) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(25, 0, 25, 25),
       child: InkResponse(
-        onTap: () => _goToUpdatePostingScreen(item.object as Posting),
+        onTap: () => _goToUpdatePostingScreen(context, item.object as Posting),
         child: Container(
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey, width: 1.0),
-            borderRadius: BorderRadius.circular(5.0),
+            borderRadius: BorderRadius.circular(5),
           ),
           child: ImageItem(item: item),
         ),
@@ -76,7 +71,7 @@ class _MyPostingsPageState extends State<MyPostingsPage> {
                 if (item.id == "create_a_listing") {
                   return _postingButton(context);
                 } else {
-                  return _item(item);
+                  return _item(context, item);
                 }
               },
             ),

@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/models/realm_models/message/message.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_constant.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
@@ -32,7 +33,7 @@ class MessageRepositoryImpl implements MessageRepository {
       }
       return createdMessage;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }

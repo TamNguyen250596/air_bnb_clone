@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_query_builder.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_relationship_mapper.dart';
@@ -45,7 +46,7 @@ class RealmService {
           );
         }
       } catch (e) {
-        print("Error linking forward relationships: $e");
+        developer.log('Error linking forward relationships', error: e);
         rethrow;
       }
 
@@ -69,7 +70,7 @@ class RealmService {
             }
           }
         } catch (e) {
-          print("Error linking inverse relationships: $e");
+          developer.log('Error linking inverse relationships', error: e);
           rethrow;
         }
       }

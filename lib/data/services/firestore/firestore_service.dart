@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:realm/realm.dart';
@@ -35,7 +36,7 @@ class FireStoreService {
       _realmManager.createFromEntity(realmObject, update: true);
       return id;
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -111,7 +112,7 @@ class FireStoreService {
       final realmObject = FirestoreMapper.fromMap<T>(data);
       _realmManager.createFromEntity(realmObject, update: true);
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }

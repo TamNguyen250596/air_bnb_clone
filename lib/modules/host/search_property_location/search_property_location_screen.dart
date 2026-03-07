@@ -18,7 +18,7 @@ class _SearchPropertyLocationScreenState
     extends State<SearchPropertyLocationScreen> {
   final TextEditingController _search = TextEditingController();
 
-  void popBack(Place place) {
+  void _popBack(Place place) {
     context.pop(place);
   }
 
@@ -78,7 +78,7 @@ class _SearchPropertyLocationScreenState
                   elevation: 3,
                   child: PlaceItem(
                     place: state.places[index],
-                    onPress: () => popBack(state.places[index]),
+                    onPress: () => _popBack(state.places[index]),
                   ),
                 );
               },

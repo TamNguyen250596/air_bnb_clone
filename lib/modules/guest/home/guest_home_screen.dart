@@ -4,18 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'current_user_cubit.dart';
 import '../../../routing/route_id.dart';
 
-class GuestHomeScreen extends StatefulWidget {
+class GuestHomeScreen extends StatelessWidget {
   const GuestHomeScreen({super.key, required this.child});
 
   final Widget child;
 
-  @override
-  State<GuestHomeScreen> createState() => _GuestScreenState();
-}
-
-class _GuestScreenState extends State<GuestHomeScreen> {
-  // ========== Properties ==========
-  final List<String> _pageTitles = [
+  static const _pageTitles = [
     'Explore',
     'Favorites',
     'Trips',
@@ -23,23 +17,22 @@ class _GuestScreenState extends State<GuestHomeScreen> {
     'Profile',
   ];
 
-  final List<String> _routes = [
+  static final _routes = [
     RouteConstant.explorePath,
     RouteConstant.saved,
     RouteConstant.trips,
     RouteConstant.inbox,
     RouteConstant.account,
   ];
-  int _selectedIndex = 0;
-  late final List<BottomNavigationBarItem> _items = [
-    _buildNavigationItem(0, Icons.search, _pageTitles[0]),
-    _buildNavigationItem(1, Icons.favorite_border, _pageTitles[1]),
-    _buildNavigationItem(2, Icons.hotel, _pageTitles[2]),
-    _buildNavigationItem(3, Icons.message, _pageTitles[3]),
-    _buildNavigationItem(4, Icons.person_outline, _pageTitles[4]),
+
+  static final _mainRoutes = [
+    RouteConstant.explorePath,
+    RouteConstant.savedPath,
+    RouteConstant.tripsPath,
+    RouteConstant.inboxPath,
+    RouteConstant.accountPath,
   ];
 
-  // ========== Helper Methods ==========
   BottomNavigationBarItem _buildNavigationItem(int index, IconData iconData, String text) {
     return BottomNavigationBarItem(
       icon: Icon(iconData),
@@ -48,39 +41,31 @@ class _GuestScreenState extends State<GuestHomeScreen> {
     );
   }
 
-  void _onItemTapped(int index) {
-    context.goNamed(_routes[index]);
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  // ========== Build Method ==========
   @override
   Widget build(BuildContext context) {
     final routerState = GoRouterState.of(context);
     final topRoute = routerState.topRoute?.path ?? "";
-
-    final mainRoutes = [
-      RouteConstant.explorePath,
-      RouteConstant.savedPath,
-      RouteConstant.tripsPath,
-      RouteConstant.inboxPath,
-      RouteConstant.accountPath,
-    ];
-
-    final isMainRoute = mainRoutes.contains(topRoute);
+    final isMainRoute = _mainRoutes.contains(topRoute);
+    final selectedIndex = _mainRoutes.indexOf(topRoute).clamp(0, _routes.length - 1);
 
     return BlocBuilder<CurrentUserCubit, CurrentUserState>(
       builder: (context, userState) {
         return Scaffold(
-          body: widget.child, // Display the child route
-          bottomNavigationBar: isMainRoute ? BottomNavigationBar(
-        onTap: _onItemTapped,
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        items: _items,
-      ) : null,
+          body: child,
+          bottomNavigationBar: isMainRoute
+              ? BottomNavigationBar(
+                  onTap: (index) => context.goNamed(_routes[index]),
+                  currentIndex: selectedIndex,
+                  type: BottomNavigationBarType.fixed,
+                  items: [
+                    _buildNavigationItem(0, Icons.search, _pageTitles[0]),
+                    _buildNavigationItem(1, Icons.favorite_border, _pageTitles[1]),
+                    _buildNavigationItem(2, Icons.hotel, _pageTitles[2]),
+                    _buildNavigationItem(3, Icons.message, _pageTitles[3]),
+                    _buildNavigationItem(4, Icons.person_outline, _pageTitles[4]),
+                  ],
+                )
+              : null,
         );
       },
     );

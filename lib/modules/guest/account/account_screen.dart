@@ -6,23 +6,18 @@ import '../../../commons/widgets/custom_app_bar.dart';
 import '../../../commons/widgets/text_snack_bar.dart';
 import 'account_cubit.dart';
 
-class AccountScreen extends StatefulWidget {
+class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
-  @override
-  State<AccountScreen> createState() => _AccountScreenState();
-}
-
-class _AccountScreenState extends State<AccountScreen> {
-  void _changeHost() {
+  void _changeHost(BuildContext context) {
     context.read<AccountCubit>().changeHost();
   }
 
-  void _signOut() {
+  void _signOut(BuildContext context) {
     context.read<AccountCubit>().signOut();
   }
 
-  Widget _avatar() {
+  Widget _avatar(BuildContext context) {
     return BlocBuilder<AccountCubit, AccountState>(
       builder: (context, state) {
         return GestureDetector(
@@ -53,7 +48,7 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _fullName() {
+  Widget _fullName(BuildContext context) {
     return BlocBuilder<AccountCubit, AccountState>(
       builder: (context, state) {
         return Text(
@@ -68,7 +63,7 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _email() {
+  Widget _email(BuildContext context) {
     return BlocBuilder<AccountCubit, AccountState>(
       builder: (context, state) {
         return Text(
@@ -83,14 +78,14 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Widget _businessButtonTitle() {
+  Widget _businessButtonTitle(BuildContext context) {
     return BlocBuilder<AccountCubit, AccountState>(
       builder: (context, state) {
         return _buildActionTitle(
           context,
           state.businessButtonTitle,
           Icons.add_business,
-          _changeHost,
+          () => _changeHost(context),
         );
       },
     );
@@ -147,11 +142,11 @@ class _AccountScreenState extends State<AccountScreen> {
                 Center(
                   child: Column(
                     children: [
-                      _avatar(),
+                      _avatar(context),
                       const SizedBox(height: 16),
-                      _fullName(),
+                      _fullName(context),
                       const SizedBox(height: 4),
-                      _email(),
+                      _email(context),
                     ],
                   ),
                 ),
@@ -163,13 +158,13 @@ class _AccountScreenState extends State<AccountScreen> {
                   () {},
                 ),
                 const SizedBox(height: 16),
-                _businessButtonTitle(),
+                _businessButtonTitle(context),
                 const SizedBox(height: 16),
                 _buildActionTitle(
                   context,
                   "Log Out",
                   Icons.login_outlined,
-                  _signOut,
+                  () => _signOut(context),
                 ),
               ],
             ),

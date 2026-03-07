@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,7 +41,7 @@ class PostingRepositoryImpl implements PostingRepository {
       }
       return createdPosting;
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -72,7 +73,7 @@ class PostingRepositoryImpl implements PostingRepository {
       }
       return await _realmManager.getEntities<Posting>(realmQuery);
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -112,7 +113,7 @@ class PostingRepositoryImpl implements PostingRepository {
       );
       return entities;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -138,7 +139,7 @@ class PostingRepositoryImpl implements PostingRepository {
 
       return localPostingStream;
     } catch(e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
@@ -154,7 +155,7 @@ class PostingRepositoryImpl implements PostingRepository {
       }
       return updatedPosting;
     } catch (e) {
-      print(e);
+      developer.log('', error: e);
       rethrow;
     }
   }
