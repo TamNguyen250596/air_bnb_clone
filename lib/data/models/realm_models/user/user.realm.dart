@@ -24,6 +24,7 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
     String? imageUrl,
     bool? isHost,
     bool isCurrentlyHosting = false,
+    double? earning,
   }) {
     if (!_defaultsSet) {
       _defaultsSet = RealmObjectBase.setDefaults<User>({
@@ -41,6 +42,7 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'imageUrl', imageUrl);
     RealmObjectBase.set(this, 'isHost', isHost);
     RealmObjectBase.set(this, 'isCurrentlyHosting', isCurrentlyHosting);
+    RealmObjectBase.set(this, 'earning', earning);
   }
 
   User._();
@@ -108,6 +110,12 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'isCurrentlyHosting', value);
 
   @override
+  double? get earning =>
+      RealmObjectBase.get<double>(this, 'earning') as double?;
+  @override
+  set earning(double? value) => RealmObjectBase.set(this, 'earning', value);
+
+  @override
   Stream<RealmObjectChanges<User>> get changes =>
       RealmObjectBase.getChanges<User>(this);
 
@@ -131,6 +139,7 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
       'imageUrl': imageUrl.toEJson(),
       'isHost': isHost.toEJson(),
       'isCurrentlyHosting': isCurrentlyHosting.toEJson(),
+      'earning': earning.toEJson(),
     };
   }
 
@@ -153,6 +162,7 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
           ejson['isCurrentlyHosting'],
           defaultValue: false,
         ),
+        earning: fromEJson(ejson['earning']),
       ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -173,6 +183,7 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('imageUrl', RealmPropertyType.string, optional: true),
       SchemaProperty('isHost', RealmPropertyType.bool, optional: true),
       SchemaProperty('isCurrentlyHosting', RealmPropertyType.bool),
+      SchemaProperty('earning', RealmPropertyType.double, optional: true),
     ]);
   }();
 

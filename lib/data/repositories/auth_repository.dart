@@ -11,10 +11,28 @@ import '../services/realm/realm_service.dart';
 import '../services/shared_preferences_service.dart';
 import 'media_repository.dart';
 
+/// Abstract contract for auth. Use [AuthRepositoryImpl] in app and a fake in unit tests.
+abstract class AuthRepository extends ChangeNotifier {
+  Future<bool> get isAuthenticated;
+  Future<String?> get userId;
+  Future<UserCredential> createUser(
+    String email,
+    String password,
+    String firstName,
+    String lastName,
+    String city,
+    String country,
+    String bio,
+    File? imageFile,
+  );
+  Future<UserCredential> signIn(String email, String password);
+  Future<void> signOut();
+}
+
 // ========== Auth Result Repository Implementation ==========
-class AuthRepository extends ChangeNotifier {
+class AuthRepositoryImpl extends AuthRepository {
   // ========== Constructor ==========
-  AuthRepository({
+  AuthRepositoryImpl({
     required AuthService authService,
     required SharedPreferencesService sharedPreferencesService,
     required UserRepository userRepository,
@@ -42,6 +60,7 @@ class AuthRepository extends ChangeNotifier {
   String? _userId;
 
   // ========== Public Methods ==========
+  @override
   Future<bool> get isAuthenticated async {
     // Status is cached
     if (_isAuthenticated != null) {
@@ -52,6 +71,7 @@ class AuthRepository extends ChangeNotifier {
     return _isAuthenticated ?? false;
   }
 
+  @override
   Future<String?> get userId async {
     // Status is cached
     if (_userId != null) {
@@ -62,6 +82,7 @@ class AuthRepository extends ChangeNotifier {
     return _userId;
   }
 
+  @override
   Future<UserCredential> createUser(
       String email,
       String password,
@@ -95,7 +116,7 @@ class AuthRepository extends ChangeNotifier {
       );
 
       await _userRepository.createUser(id, user.toFirestore());
-      _sharedPreferencesService.saveToken(id);
+      await _sharedPreferencesService.saveToken(id);
       _isAuthenticated = true;
       _userId = id;
     } else {
@@ -106,13 +127,14 @@ class AuthRepository extends ChangeNotifier {
     return firebaseUser;
   }
 
+  @override
   Future<UserCredential> signIn(String email, String password) async {
     final firebaseUser = await _authService.signIn(email, password);
 
     if (firebaseUser.user != null) {
       final id = firebaseUser.user!.uid;
 
-      _sharedPreferencesService.saveToken(id);
+      await _sharedPreferencesService.saveToken(id);
       await _userRepository.getUser(id);
       _isAuthenticated = true;
       _userId = id;
@@ -132,6 +154,7 @@ class AuthRepository extends ChangeNotifier {
     _isAuthenticated = result != null;
   }
 
+  @override
   Future<void> signOut() async {
     await _sharedPreferencesService.removeToken();
     await _authService.signOut();

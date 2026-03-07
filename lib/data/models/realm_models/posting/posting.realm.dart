@@ -9,7 +9,7 @@ part of 'posting.dart';
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
-class Posting extends _Posting with RealmEntity, RealmObjectBase, RealmObject {
+class Posting extends $Posting with RealmEntity, RealmObjectBase, RealmObject {
   static var _defaultsSet = false;
 
   Posting(
