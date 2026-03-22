@@ -19,6 +19,9 @@ import '../modules/guest/saved/saved_cubit.dart';
 import '../modules/guest/saved/saved_screen.dart';
 import '../modules/guest/trips/trips_cubit.dart';
 import '../modules/guest/trips/trips_screen.dart';
+import '../data/models/realm_models/conversation/conversation.dart';
+import '../modules/guest/chat/chat_cubit.dart';
+import '../modules/guest/chat/chat_screen.dart';
 import '../modules/guest/inbox/inbox_cubit.dart';
 import '../modules/guest/inbox/inbox_screen.dart';
 import '../modules/guest/account/account_cubit.dart';
@@ -70,10 +73,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ShellRoute(
       builder: (context, state, child) {
         return BlocProvider(
-          create: (_) => CurrentUserCubit(
-            authRepository: context.read(),
-            userRepository: context.read(),
-          ),
+          create: (_) => CurrentUserCubit(),
           child: GuestHomeScreen(child: child),
         );
       },
@@ -149,10 +149,30 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.inbox,
           builder: (context, state) {
             return BlocProvider(
-              create: (_) => InboxCubit(),
+              create: (_) => InboxCubit(
+                conversationRepository: context.read(),
+                authRepository: context.read(),
+              ),
               child: const InboxScreen(),
             );
           },
+          routes: [
+            _route(
+              RouteConstant.chat,
+              builder: (context, state) {
+                final conversation = state.extra as Conversation?;
+                return BlocProvider(
+                  create: (_) => ChatCubit(
+                    conversation: conversation,
+                    messageRepository: context.read(),
+                    authRepository: context.read(),
+                    userRepository: context.read(),
+                  ),
+                  child: const ChatScreen(),
+                );
+              },
+            ),
+          ],
         ),
         GoRoute(
           path: RouteConstant.accountPath,
@@ -172,10 +192,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ShellRoute(
       builder: (context, state, child) {
         return BlocProvider(
-          create: (_) => CurrentUserCubit(
-            authRepository: context.read(),
-            userRepository: context.read(),
-          ),
+          create: (_) => CurrentUserCubit(),
           child: HostHomeScreen(child: child),
         );
       },
@@ -185,7 +202,11 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.bookings,
           builder: (context, state) {
             return BlocProvider(
-              create: (_) => BookingsCubit(),
+              create: (_) => BookingsCubit(
+                postingRepository: context.read(),
+                bookingRepository: context.read(),
+                authRepository: context.read()
+              ),
               child: const BookingsPage(),
             );
           },
@@ -238,7 +259,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.hostInbox,
           builder: (context, state) {
             return BlocProvider(
-              create: (_) => InboxCubit(),
+              create: (_) => InboxCubit(
+                conversationRepository: context.read(),
+                authRepository: context.read(),
+              ),
               child: const InboxScreen(),
             );
           },

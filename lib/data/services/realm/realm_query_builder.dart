@@ -44,6 +44,17 @@ class RealmQueryBuilder {
     return this;
   }
 
+  /// Query collection/set field containing a value (e.g. members CONTAINS userId)
+  RealmQueryBuilder contains(String field, dynamic value) {
+    if (_queryNumber > 0) {
+      _queryString += " AND ";
+    }
+    _queryString += "$field CONTAINS \$$_queryNumber";
+    _queryValues.add(value);
+    _queryNumber++;
+    return this;
+  }
+
   /// Searches across multiple fields with OR logic (e.g. name OR address OR type)
   RealmQueryBuilder orContains(List<String> fields, String value) {
     if (value.isEmpty) return this;
@@ -54,6 +65,16 @@ class RealmQueryBuilder {
     final parts = fields.map((f) => "$f CONTAINS[c] \$$paramIndex").join(" OR ");
     _queryString += "($parts)";
     _queryValues.add(value);
+    return this;
+  }
+
+  /// Appends Realm `SORT(field ASC)`. Call after filter clauses (e.g. [equal]).
+  RealmQueryBuilder sortAscending(String field) {
+    if (_queryString.isEmpty) {
+      _queryString = 'TRUEPREDICATE SORT($field ASC)';
+    } else {
+      _queryString += ' SORT($field ASC)';
+    }
     return this;
   }
 

@@ -158,8 +158,8 @@ class AuthRepositoryImpl extends AuthRepository {
   Future<void> signOut() async {
     await _sharedPreferencesService.removeToken();
     await _authService.signOut();
-    _firestoreService.removeAllListeners();
-    _realmManager.deleteAll();
+    await _firestoreService.removeAllListeners();
+    await _realmManager.deleteAll();
     _isAuthenticated = false;
     _userId = null;
     notifyListeners();

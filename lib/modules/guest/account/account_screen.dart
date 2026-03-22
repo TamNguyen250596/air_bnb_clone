@@ -13,7 +13,7 @@ class AccountScreen extends StatelessWidget {
     context.read<AccountCubit>().changeHost();
   }
 
-  void _signOut(BuildContext context) {
+  Future<void> _signOut(BuildContext context) async {
     context.read<AccountCubit>().signOut();
   }
 
@@ -164,7 +164,7 @@ class AccountScreen extends StatelessWidget {
                   context,
                   "Log Out",
                   Icons.login_outlined,
-                  () => _signOut(context),
+                  () async => await _signOut(context),
                 ),
               ],
             ),

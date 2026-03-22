@@ -32,10 +32,17 @@ class ImageItem extends StatelessWidget {
               ),
             ),
           ),
-          Text(
-            item.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          Expanded(
+            child: Text(
+              item.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
+          Text(
+            item.des,
+            style: const TextStyle(fontWeight: FontWeight.normal),
+
+    ),
         ]
       )
     );

@@ -14,7 +14,10 @@ class Conversation extends _Conversation
   Conversation(
     String id, {
     Set<String> members = const {},
+    String? avatar,
+    String? name,
     String? lastMessage,
+    DateTime? lastMessageAt,
     DateTime? createdAt,
   }) {
     RealmObjectBase.set(this, 'id', id);
@@ -23,7 +26,10 @@ class Conversation extends _Conversation
       'members',
       RealmSet<String>(members),
     );
+    RealmObjectBase.set(this, 'avatar', avatar);
+    RealmObjectBase.set(this, 'name', name);
     RealmObjectBase.set(this, 'lastMessage', lastMessage);
+    RealmObjectBase.set(this, 'lastMessageAt', lastMessageAt);
     RealmObjectBase.set(this, 'createdAt', createdAt);
   }
 
@@ -42,11 +48,28 @@ class Conversation extends _Conversation
       throw RealmUnsupportedSetError();
 
   @override
+  String? get avatar => RealmObjectBase.get<String>(this, 'avatar') as String?;
+  @override
+  set avatar(String? value) => RealmObjectBase.set(this, 'avatar', value);
+
+  @override
+  String? get name => RealmObjectBase.get<String>(this, 'name') as String?;
+  @override
+  set name(String? value) => RealmObjectBase.set(this, 'name', value);
+
+  @override
   String? get lastMessage =>
       RealmObjectBase.get<String>(this, 'lastMessage') as String?;
   @override
   set lastMessage(String? value) =>
       RealmObjectBase.set(this, 'lastMessage', value);
+
+  @override
+  DateTime? get lastMessageAt =>
+      RealmObjectBase.get<DateTime>(this, 'lastMessageAt') as DateTime?;
+  @override
+  set lastMessageAt(DateTime? value) =>
+      RealmObjectBase.set(this, 'lastMessageAt', value);
 
   @override
   DateTime? get createdAt =>
@@ -71,7 +94,10 @@ class Conversation extends _Conversation
     return <String, dynamic>{
       'id': id.toEJson(),
       'members': members.toEJson(),
+      'avatar': avatar.toEJson(),
+      'name': name.toEJson(),
       'lastMessage': lastMessage.toEJson(),
+      'lastMessageAt': lastMessageAt.toEJson(),
       'createdAt': createdAt.toEJson(),
     };
   }
@@ -83,7 +109,10 @@ class Conversation extends _Conversation
       {'id': EJsonValue id} => Conversation(
         fromEJson(id),
         members: fromEJson(ejson['members']),
+        avatar: fromEJson(ejson['avatar']),
+        name: fromEJson(ejson['name']),
         lastMessage: fromEJson(ejson['lastMessage']),
+        lastMessageAt: fromEJson(ejson['lastMessageAt']),
         createdAt: fromEJson(ejson['createdAt']),
       ),
       _ => raiseInvalidEJson(ejson),
@@ -104,7 +133,14 @@ class Conversation extends _Conversation
           RealmPropertyType.string,
           collectionType: RealmCollectionType.set,
         ),
+        SchemaProperty('avatar', RealmPropertyType.string, optional: true),
+        SchemaProperty('name', RealmPropertyType.string, optional: true),
         SchemaProperty('lastMessage', RealmPropertyType.string, optional: true),
+        SchemaProperty(
+          'lastMessageAt',
+          RealmPropertyType.timestamp,
+          optional: true,
+        ),
         SchemaProperty(
           'createdAt',
           RealmPropertyType.timestamp,

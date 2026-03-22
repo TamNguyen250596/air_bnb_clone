@@ -8,6 +8,9 @@ class _Conversation {
   late String id;
 
   late Set<String> members;
+  String? avatar;
+  String? name;
   String? lastMessage;
+  DateTime? lastMessageAt;
   DateTime? createdAt;
 }

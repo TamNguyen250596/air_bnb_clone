@@ -1,6 +1,7 @@
 import 'package:air_bnb_clone/data/models/realm_models/booking/booking.dart';
 import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
 import 'package:air_bnb_clone/data/models/realm_models/user/user.dart';
+import 'package:air_bnb_clone/data/services/realm/realm_relationship.dart';
 
 extension BookingFirestoreExtension on Booking {
   Map<String, dynamic> toFirestore() {
@@ -13,6 +14,15 @@ extension BookingFirestoreExtension on Booking {
       if (paymentAmount != null) 'payment_amount': paymentAmount,
     };
   }
+}
+
+extension BookingRelationshipExtension on Booking {
+  static List<RealmRelationship> get realmOutgoingRelationships => [
+        RealmRelationship<Posting>('postingId', 'posting'),
+        RealmRelationship<User>('userId', 'user'),
+      ];
+
+  static List<RealmRelationship> get realmIncomingRelationships => const [];
 }
 
 class BookingFirestoreHelper {

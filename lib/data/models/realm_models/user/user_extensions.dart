@@ -1,3 +1,7 @@
+import 'package:air_bnb_clone/data/services/realm/realm_relationship.dart';
+import '../booking/booking.dart';
+import '../message/message.dart';
+import '../posting/posting.dart';
 import 'user.dart';
 
 /// Extension methods for User model to handle Firestore conversions
@@ -22,10 +26,21 @@ extension UserFirestoreExtension on User {
   }
 }
 
+/// Realm foreign-key metadata for [RealmRelationshipRegistry] (same file as Firestore extension).
+extension UserRelationshipExtension on User {
+  static List<RealmRelationship> get realmOutgoingRelationships => const [];
+
+  static List<RealmRelationship> get realmIncomingRelationships => [
+        RealmRelationship<Posting>('hostId', 'host'),
+        RealmRelationship<Booking>('userId', 'user'),
+        RealmRelationship<Message>('senderId', 'sender'),
+      ];
+}
+
 /// Helper class for User Firestore operations
 /// Since extension methods can't add factory constructors,
 /// we use a static method here
-/// 
+///
 /// Usage: UserFirestoreHelper.fromFirestore(data)
 /// Or import this file and use: User.fromFirestore(data) via the helper
 class UserFirestoreHelper {
@@ -48,4 +63,3 @@ class UserFirestoreHelper {
     );
   }
 }
-

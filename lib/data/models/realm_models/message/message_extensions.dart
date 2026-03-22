@@ -1,5 +1,6 @@
 import 'package:air_bnb_clone/data/models/realm_models/message/message.dart';
 import 'package:air_bnb_clone/data/models/realm_models/user/user.dart';
+import 'package:air_bnb_clone/data/services/realm/realm_relationship.dart';
 
 extension MessageFirestoreExtension on Message {
   Map<String, dynamic> toFirestore() {
@@ -13,16 +14,32 @@ extension MessageFirestoreExtension on Message {
   }
 }
 
+extension MessageRelationshipExtension on Message {
+  static List<RealmRelationship> get realmOutgoingRelationships => [
+        RealmRelationship<User>('senderId', 'sender'),
+      ];
+
+  static List<RealmRelationship> get realmIncomingRelationships => const [];
+}
+
 class MessageFirestoreHelper {
   static Message fromFirestore(Map<String, dynamic> data) {
-    return Message(
+    var entity = Message(
       data['id'] ?? "",
       senderId: data['sender_id'],
-      sender: data['sender'] as User?,
       conversationId: data['conversation_id'],
       text: data['text'],
       createdAt: _parseDateTime(data['created_at']),
     );
+    final sender = _getUser(data);
+    if (sender != null) {
+      entity.sender = sender;
+    }
+    return entity;
+  }
+
+  static User? _getUser(Map<String, dynamic> data) {
+    return data['sender'] as User?;
   }
 
   static DateTime? _parseDateTime(dynamic value) {
