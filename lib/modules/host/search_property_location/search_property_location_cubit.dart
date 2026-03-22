@@ -22,10 +22,10 @@ class SearchPropertyLocationCubit extends Cubit<SearchPropertyLocationState> {
   StreamSubscription? _searchSubscription;
 
   @override
-  Future<void> close() {
-    super.close();
-    _searchSubscription?.cancel();
-    return _searchTxtController.close();
+  Future<void> close() async {
+    await _searchSubscription?.cancel();
+    await _searchTxtController.close();
+    await super.close();
   }
 
   void setSearchTxt(String searchTxt) {

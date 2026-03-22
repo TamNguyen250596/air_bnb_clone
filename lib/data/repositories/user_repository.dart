@@ -72,11 +72,9 @@ class UserRepositoryImpl implements UserRepository {
           .where((event) => event.results.isNotEmpty)
           .map((event) => event.results.first);
 
-      localUserStream.doOnCancel(() {
+      return localUserStream.doOnCancel(() {
         _fireStoreService.removeDocListener(FirestoreCollection.user, id);
       });
-
-      return localUserStream;
     } catch (e) {
       developer.log('', error: e);
       rethrow;

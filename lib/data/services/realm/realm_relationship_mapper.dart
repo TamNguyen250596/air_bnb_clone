@@ -1,10 +1,39 @@
-import 'package:realm/realm.dart';
 import '../../models/realm_models/booking/booking.dart';
+import '../../models/realm_models/booking/booking_extensions.dart';
+import '../../models/realm_models/message/message.dart';
+import '../../models/realm_models/message/message_extensions.dart';
 import '../../models/realm_models/posting/posting.dart';
+import '../../models/realm_models/posting/posting_extensions.dart';
 import '../../models/realm_models/user/user.dart';
+import '../../models/realm_models/user/user_extensions.dart';
+import 'realm_relationship.dart';
+
+export 'realm_relationship.dart';
 
 /// Registry of Realm object relationships. Used by [RealmService.createFromEntity]
 /// to resolve foreign-key IDs into linked objects and to back-fill inverse links.
+///
+/// ## Registry layout
+///
+/// Each model type that participates in linking has:
+///
+/// - A **`RealmRelationshipHelper`** holding **outgoing** and **incoming** lists of
+///   [RealmRelationship] (id field + link field pairs).
+/// - A single **`Map<Type, RealmRelationshipHelper>`** (`_helpers`) for lookup by `T`
+///   at runtime via [RealmRelationshipRegistry.getOutgoingRelationships] and
+///   [RealmRelationshipRegistry.getIncomingRelationships].
+/// - A separate **`ModelRelationshipExtension`** on each type (same `*_extensions.dart`
+///   file as `ModelFirestoreExtension`): `realmOutgoingRelationships` and
+///   `realmIncomingRelationships`. The map is built from those getters—**adding a new
+///   linked model** means: add/update that relationship extension, add a `_helpers` entry,
+///   and update related types.
+///
+/// ```mermaid
+/// flowchart LR
+///   t[Type] --> h[RealmRelationshipHelper]
+///   h --> o[outgoing]
+///   h --> i[incoming]
+/// ```
 ///
 /// ## Model examples (this codebase)
 ///
@@ -22,7 +51,8 @@ import '../../models/realm_models/user/user.dart';
 ///   ...
 /// }
 /// ```
-/// So: _outgoingRelationships[Posting] = [ RealmRelationship<User>("hostId", "host") ].
+/// So [PostingRelationshipExtension.realmOutgoingRelationships] includes
+/// `RealmRelationship<User>("hostId", "host")`.
 ///
 /// **Booking** – references one Posting and one User.
 /// ```dart
@@ -36,10 +66,9 @@ import '../../models/realm_models/user/user.dart';
 ///   DateTime? checkOut;
 /// }
 /// ```
-/// So: _outgoingRelationships[Booking] = [
-///   RealmRelationship<Posting>("postingId", "posting"),
-///   RealmRelationship<User>("userId", "user"),
-/// ].
+/// So [BookingRelationshipExtension.realmOutgoingRelationships] includes both
+/// `RealmRelationship<Posting>("postingId", "posting")` and
+/// `RealmRelationship<User>("userId", "user")`.
 ///
 /// ## How to use outgoing vs incoming
 ///
@@ -47,83 +76,70 @@ import '../../models/realm_models/user/user.dart';
 ///
 /// When you create an entity and only set the *id* fields (e.g. `postingId`, `userId`),
 /// the link fields (e.g. `posting`, `user`) are still null. The registry uses
-/// [_outgoingRelationships] to know which (id field, link field) pairs to resolve:
+/// the **outgoing** list for `T` to know which (id field, link field) pairs to resolve:
 /// for each pair it looks up the entity by id in the realm and sets the link.
 ///
 /// Example: You create a [Booking] with `postingId: "p1"`, `userId: "u1"`. The
-/// registry sees Booking’s outgoing list, reads `postingId` and `userId`, finds
-/// [Posting] "p1" and [User] "u1" in the realm, and sets `booking.posting` and
-/// `booking.user`. Same idea for [Posting]: set `hostId` and the registry fills `host`.
+/// registry sees [BookingRelationshipExtension.realmOutgoingRelationships], reads `postingId`
+/// and `userId`, finds [Posting] "p1" and [User] "u1" in the realm, and sets
+/// `booking.posting` and `booking.user`. Same idea for [Posting]: set `hostId` and
+/// the registry fills `host`.
 ///
 /// **Incoming** = “Other types point to this type; after we add this entity, back-fill their links.”
 ///
 /// When you create an entity (e.g. a new [User] or [Posting]), there may already be
 /// other entities in the realm that reference it by *id* but have a null *link*
-/// (e.g. Bookings with `userId == newUser.id` but `user == null`). The registry
-/// uses [_incomingRelationships] to find those and set their link to the new entity.
+/// (e.g. Bookings with `userId == newUser.id` but `user == null`). The registry uses
+/// the **incoming** list for `T` to find those and set their link to the new entity.
 ///
 /// Example: You add a new [User] with id `"u2"`. The registry looks at
-/// _incomingRelationships[User]: Postings with `hostId == "u2"` and Bookings with
-/// `userId == "u2"`. For each, it sets `host` or `user` to this new User. So
-/// existing rows that pointed to "u2" by id now point by link as well.
+/// [UserRelationshipExtension.realmIncomingRelationships]: Postings with `hostId == "u2"`,
+/// Bookings with `userId == "u2"`, Messages with `senderId == "u2"`. For each, it sets
+/// `host`, `user`, or `sender` to this new User.
 ///
 /// Property names in [RealmRelationship] must match the Realm model field names
 /// exactly (e.g. `postingId` and `posting` on [Booking]).
-class RealmRelationshipRegistry {
 
-  /// Per-type: relationships this type references (outgoing foreign keys).
+/// Holds [RealmRelationship] lists for both directions for one model [Type].
+class RealmRelationshipHelper {
+  const RealmRelationshipHelper({
+    required this.outgoing,
+    required this.incoming,
+  });
+
+  /// Relationships this type references (outgoing foreign keys).
   /// Each entry: (relationKey = id field, relationshipProperty = link field).
-  static final Map<Type, List<RealmRelationship>> _outgoingRelationships = {
-    Posting: [
-      RealmRelationship<User>("hostId", "host"),
-    ],
-    Booking: [
-      RealmRelationship<Posting>("postingId", "posting"),
-      RealmRelationship<User>("userId", "user"),
-    ],
-  };
+  final List<RealmRelationship> outgoing;
 
-  /// Per-type: relationships that reference this type (incoming from other types).
-  /// E.g. User is referenced by Posting.hostId→host and Booking.userId→user.
-  static final Map<Type, List<RealmRelationship>> _incomingRelationships = {
-    User: [
-      RealmRelationship<Posting>("hostId", "host"),
-      RealmRelationship<Booking>("userId", "user"),
-    ],
-    Posting: [
-      RealmRelationship<Booking>("postingId", "posting"),
-    ],
+  /// Relationships where other types reference this type (incoming).
+  final List<RealmRelationship> incoming;
+}
+
+class RealmRelationshipRegistry {
+  static final Map<Type, RealmRelationshipHelper> _helpers = {
+    User: RealmRelationshipHelper(
+      outgoing: UserRelationshipExtension.realmOutgoingRelationships,
+      incoming: UserRelationshipExtension.realmIncomingRelationships,
+    ),
+    Posting: RealmRelationshipHelper(
+      outgoing: PostingRelationshipExtension.realmOutgoingRelationships,
+      incoming: PostingRelationshipExtension.realmIncomingRelationships,
+    ),
+    Booking: RealmRelationshipHelper(
+      outgoing: BookingRelationshipExtension.realmOutgoingRelationships,
+      incoming: BookingRelationshipExtension.realmIncomingRelationships,
+    ),
+    Message: RealmRelationshipHelper(
+      outgoing: MessageRelationshipExtension.realmOutgoingRelationships,
+      incoming: MessageRelationshipExtension.realmIncomingRelationships,
+    ),
   };
 
   static List<RealmRelationship> getOutgoingRelationships<T>() {
-    final list = _outgoingRelationships[T];
-    return list ?? [];
+    return _helpers[T]?.outgoing ?? const [];
   }
 
   static List<RealmRelationship> getIncomingRelationships<T>() {
-    final list = _incomingRelationships[T];
-    return list ?? [];
-  }
-}
-
-class RealmRelationship<T extends RealmObject> {
-
-  RealmRelationship(this.relationKey, this.relationshipProperty);
-
-  final String relationKey;
-  final String relationshipProperty;
-
-  /// Resolves and returns the entity referenced by [sourceObject] via [relationKey].
-  /// [sourceObject] is the entity that holds the foreign key (e.g. Posting with hostId).
-  T? getReferencedEntity(Realm realm, RealmObject sourceObject) {
-    final id = sourceObject.dynamic.get(relationKey) as String?;
-    if (id == null || id.isEmpty) return null;
-    return realm.find<T>(id);
-  }
-
-  /// Returns all entities of type T that reference the given [referencedEntityId].
-  RealmResults<T> getReferencingEntities(Realm realm, String referencedEntityId) {
-    final query = "$relationKey == \$0 AND $relationshipProperty == \$1";
-    return realm.query<T>(query, [referencedEntityId, null]);
+    return _helpers[T]?.incoming ?? const [];
   }
 }

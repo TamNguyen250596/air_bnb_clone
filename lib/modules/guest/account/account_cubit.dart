@@ -45,9 +45,10 @@ class AccountCubit extends Cubit<AccountState> {
   StreamSubscription? _userSubscription;
 
   @override
-  Future<void> close() {
-    _userSubscription?.cancel();
-    return super.close();
+  Future<void> close() async {
+    await _userSubscription?.cancel();
+    _userSubscription = null;
+    await super.close();
   }
 
   Future<void> changeHost() async {
@@ -95,6 +96,8 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> signOut() async {
+    await _userSubscription?.cancel();
+    _userSubscription = null;
     emit(state.copyWith(errorMessage: null, isLoading: true));
     try {
       await _authRepository.signOut();

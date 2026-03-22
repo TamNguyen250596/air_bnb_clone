@@ -130,14 +130,12 @@ class PostingRepositoryImpl implements PostingRepository {
               .equal("hostId", hostId)
       );
 
-      localPostingStream.doOnCancel(() {
+      return localPostingStream.doOnCancel(() {
         _firestoreService.removeCollectionListener(
-            FirestoreQueryBuilder(FirestoreCollection.posting)
-                .equalTo("host_id", hostId)
+          FirestoreQueryBuilder(FirestoreCollection.posting)
+              .equalTo("host_id", hostId),
         );
       });
-
-      return localPostingStream;
     } catch(e) {
       developer.log('', error: e);
       rethrow;

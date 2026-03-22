@@ -288,18 +288,28 @@ class BookPostingCubit extends Cubit<BookPostingState> {
     final text =
         "Hello, I want to book $postingName from ${inDate.day}/${inDate.month}/${inDate.year} to ${outDate.day}/${outDate.month}/${outDate.year}";
 
+    final currentUser = await _userRepository.getUser(userId);
+    if (!currentUser.isValid) return;
+
+    final lastMessagePayload = {
+      "last_message_at": DateTime.now().millisecondsSinceEpoch,
+      "last_message": text,
+      "name": currentUser.fullName ?? '',
+      "avatar": currentUser.imageUrl ?? '',
+    };
+
     final existing = await _conversationRepository.getConversation(conversationId);
     if (existing != null) {
       await _conversationRepository.updateConversation(
         conversationId,
-        {"last_message": text},
+        lastMessagePayload,
       );
     } else {
       await _conversationRepository.createConversation(
         {
           "members": [userId, hostId],
           "created_at": DateTime.now().millisecondsSinceEpoch,
-          "last_message": text,
+          ...lastMessagePayload,
         },
         conversationId,
       );

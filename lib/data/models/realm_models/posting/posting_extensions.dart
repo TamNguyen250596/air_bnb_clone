@@ -1,4 +1,6 @@
 import 'package:air_bnb_clone/data/models/realm_models/posting/posting.dart';
+import 'package:air_bnb_clone/data/services/realm/realm_relationship.dart';
+import '../booking/booking.dart';
 import '../user/user.dart';
 
 extension PostingFirestoreExtension on Posting {
@@ -22,6 +24,16 @@ extension PostingFirestoreExtension on Posting {
       "lon": lon,
     };
   }
+}
+
+extension PostingRelationshipExtension on Posting {
+  static List<RealmRelationship> get realmOutgoingRelationships => [
+        RealmRelationship<User>('hostId', 'host'),
+      ];
+
+  static List<RealmRelationship> get realmIncomingRelationships => [
+        RealmRelationship<Booking>('postingId', 'posting'),
+      ];
 }
 
 class PostingFirestoreHelper {

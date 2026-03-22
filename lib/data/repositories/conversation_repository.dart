@@ -1,13 +1,19 @@
 import 'dart:developer' as developer;
 import 'package:air_bnb_clone/data/models/realm_models/conversation/conversation.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_constant.dart';
+import 'package:air_bnb_clone/data/services/firestore/firestore_query_builder.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
+import 'package:air_bnb_clone/data/services/realm/realm_query_builder.dart';
 import 'package:air_bnb_clone/data/services/realm/realm_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:realm/realm.dart';
+import 'package:rxdart/rxdart.dart';
 
 /// Abstract contract for conversations. Use [ConversationRepositoryImpl] in app and a fake in unit tests.
 abstract class ConversationRepository {
   Future<Conversation> createConversation(Map<String, dynamic> data, String? id);
   Future<Conversation?> getConversation(String id);
+  Stream<RealmResultsChanges<Conversation>> observeConversations(String userId);
   Future<Conversation> updateConversation(String id, Map<String, dynamic> data);
 }
 
@@ -49,6 +55,23 @@ class ConversationRepositoryImpl implements ConversationRepository {
         id,
       );
       return await _realmManager.getEntity<Conversation>(id);
+    } catch (e) {
+      developer.log('', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<RealmResultsChanges<Conversation>> observeConversations(String userId) {
+    try {
+      final firestoreQuery = FirestoreQueryBuilder(FirestoreCollection.conversation)
+          .filter(Filter('members', arrayContains: userId));
+      _firestoreService.observeCollection<Conversation>(firestoreQuery);
+      final realmQuery = RealmQueryBuilder().contains('members', userId);
+      final stream = _realmManager.observeEntities<Conversation>(realmQuery);
+      return stream.doOnCancel(() {
+        _firestoreService.removeCollectionListener(firestoreQuery);
+      });
     } catch (e) {
       developer.log('', error: e);
       rethrow;

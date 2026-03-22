@@ -22,7 +22,7 @@ class FireStoreService {
   Future<String> createDoc<T extends RealmObject>(String collection, String? id, Map<String, dynamic> data) async {
     try {
       if (id == null || id.isEmpty) {
-        final docRef = await FirebaseFirestore.instance.collection(collection).doc();
+        final docRef = FirebaseFirestore.instance.collection(collection).doc();
         data["id"] = docRef.id;
         id = docRef.id;
         await docRef.set(data);
@@ -87,10 +87,7 @@ class FireStoreService {
           case DocumentChangeType.modified:
             if (change.doc.exists && change.doc.data() != null) {
               final realmObject = FirestoreMapper.fromMap<T>(change.doc.data()!);
-              _realmManager.createFromEntity(
-                realmObject,
-                update: true,
-              );
+              _realmManager.createFromEntity(realmObject, update: true);
             }
             break;
 
@@ -132,10 +129,17 @@ class FireStoreService {
     _observedCollections.remove(stream);
   }
 
-  void removeAllListeners() {
-    _observedDocuments.forEach((key, value) => value.cancel());
+  /// Awaits each Firestore subscription cancel so no snapshot handler runs during Realm teardown.
+  Future<void> removeAllListeners() async {
+    final docSubs = _observedDocuments.values.toList();
     _observedDocuments.clear();
-    _observedCollections.forEach((key, value) => value.cancel());
+    for (final sub in docSubs) {
+      await sub.cancel();
+    }
+    final collSubs = _observedCollections.values.toList();
     _observedCollections.clear();
+    for (final sub in collSubs) {
+      await sub.cancel();
+    }
   }
 }

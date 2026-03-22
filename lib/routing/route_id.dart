@@ -17,6 +17,8 @@ abstract class RouteConstant {
   static final String tripsPath = "/${RouteConstant.trips}";
   static final String inbox = "inbox";
   static final String inboxPath = "/${RouteConstant.inbox}";
+  /// Child of [inboxPath] / [hostInboxPath] — full path e.g. `/inbox/chat`.
+  static final String chat = "chat";
   static final String account = "account";
   static final String accountPath = "/${RouteConstant.account}";
 

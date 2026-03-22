@@ -17,53 +17,5 @@ class CurrentUserState {
 }
 
 class CurrentUserCubit extends Cubit<CurrentUserState> {
-  CurrentUserCubit({
-    required AuthRepository authRepository,
-    required UserRepository userRepository,
-  })  : _authRepository = authRepository,
-        _userRepository = userRepository,
-        super(const CurrentUserState()) {
-    _observeCurrentUser();
-  }
-
-  final AuthRepository _authRepository;
-  final UserRepository _userRepository;
-  StreamSubscription<User>? _userSubscription;
-
-  @override
-  Future<void> close() {
-    _userSubscription?.cancel();
-    return super.close();
-  }
-
-  Future<void> _observeCurrentUser() async {
-    final userId = await _authRepository.userId;
-    if (userId == null) {
-      emit(const CurrentUserState(isLoading: false));
-      return;
-    }
-
-    try {
-      _userSubscription = _userRepository.observeUser(userId).listen(
-        (user) {
-          emit(CurrentUserState(
-            user: user,
-            isLoading: false,
-            errorMessage: null,
-          ));
-        },
-        onError: (Object error, StackTrace stackTrace) {
-          emit(CurrentUserState(
-            isLoading: false,
-            errorMessage: error.toString(),
-          ));
-        },
-      );
-    } catch (e) {
-      emit(CurrentUserState(
-        isLoading: false,
-        errorMessage: e.toString(),
-      ));
-    }
-  }
+  CurrentUserCubit() : super(const CurrentUserState());
 }

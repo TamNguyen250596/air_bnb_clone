@@ -5,7 +5,10 @@ extension ConversationFirestoreExtension on Conversation {
     return {
       if (id.isNotEmpty) 'id': id,
       if (members.isNotEmpty) 'members': members.toList(),
+      if (avatar != null) 'avatar': avatar,
+      if (name != null) 'name': name,
       if (lastMessage != null) 'last_message': lastMessage,
+      if (lastMessageAt != null) 'last_message_at': lastMessageAt!.millisecondsSinceEpoch,
       if (createdAt != null) 'created_at': createdAt!.millisecondsSinceEpoch,
     };
   }
@@ -16,7 +19,10 @@ class ConversationFirestoreHelper {
     return Conversation(
       data['id'] ?? "",
       members: Set<String>.from(data['members'] ?? []),
+      avatar: data['avatar'],
+      name: data['name'],
       lastMessage: data['last_message'],
+      lastMessageAt: _parseDateTime(data['last_message_at']),
       createdAt: _parseDateTime(data['created_at']),
     );
   }
