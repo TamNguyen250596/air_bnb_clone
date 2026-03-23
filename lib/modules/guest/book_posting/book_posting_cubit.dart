@@ -133,7 +133,7 @@ class BookPostingCubit extends Cubit<BookPostingState> {
   Future<Set<DateTime>> _getUnselectableDates() async {
     if (_posting == null) return <DateTime>{};
     if (!_posting.isValid) return <DateTime>{};
-    final bookings = await _bookingRepository.getBookingsByPostingId(_posting.id);
+    final bookings = await _bookingRepository.getBookingsForPosting(_posting.id);
     if (bookings.isEmpty) return <DateTime>{};
 
     Set<DateTime> bookedDates = <DateTime>{};

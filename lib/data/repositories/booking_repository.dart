@@ -12,7 +12,7 @@ import 'package:rxdart/rxdart.dart';
 /// Abstract contract for bookings. Use [BookingRepositoryImpl] in app and a fake in unit tests.
 abstract class BookingRepository {
   Future<Booking> createBooking(Map<String, dynamic> data);
-  Future<RealmResults<Booking>> getBookingsByPostingId(String postingId);
+  Future<RealmResults<Booking>> getBookingsForPosting(String postingId, {String? userId});
   Stream<RealmResultsChanges<Booking>> observeBookingsWithCheckOutFrom(int dateMillis);
   Stream<RealmResultsChanges<Booking>> observeBookingsWithCheckOutBefore(int dateMillis);
 }
@@ -47,12 +47,18 @@ class BookingRepositoryImpl implements BookingRepository {
   }
 
   @override
-  Future<RealmResults<Booking>> getBookingsByPostingId(String postingId) async {
+  Future<RealmResults<Booking>> getBookingsForPosting(String postingId, {String? userId}) async {
     try {
-      final query = FirestoreQueryBuilder(FirestoreCollection.booking)
+      var firestoreQuery = FirestoreQueryBuilder(FirestoreCollection.booking)
           .equalTo('posting_id', postingId);
-      await _firestoreService.getCollection<Booking>(query);
-      final realmQuery = RealmQueryBuilder().equal('postingId', postingId);
+      if (userId != null) {
+        firestoreQuery = firestoreQuery.equalTo('user_id', userId);
+      }
+      await _firestoreService.getCollection<Booking>(firestoreQuery);
+      var realmQuery = RealmQueryBuilder().equal('postingId', postingId);
+      if (userId != null) {
+        realmQuery = realmQuery.equal('userId', userId);
+      }
       return await _realmManager.getEntities<Booking>(realmQuery);
     } catch (e) {
       developer.log('', error: e);

@@ -6,7 +6,9 @@ import 'package:air_bnb_clone/data/services/realm/realm_relationship_mapper.dart
 import 'package:realm/realm.dart';
 import '../../models/realm_models/booking/booking.dart';
 import '../../models/realm_models/conversation/conversation.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting.dart';
 import '../../models/realm_models/message/message.dart';
+import '../../models/realm_models/review/review.dart';
 import '../../models/realm_models/user/user.dart';
 
 class RealmService {
@@ -15,10 +17,12 @@ class RealmService {
       User.schema,
       Posting.schema,
       Booking.schema,
+      FavouritePosting.schema,
       Message.schema,
+      Review.schema,
       Conversation.schema,
     ],
-    schemaVersion: 2,
+    schemaVersion: 4,
     shouldDeleteIfMigrationNeeded: true,
   );
 
@@ -101,10 +105,12 @@ class RealmService {
   // ========== Delete ==========
   void deleteEntity<T extends RealmObject>(String id) {
     final realm = _getRealm();
-    final entity = realm.find<T>(id);
-    if (entity != null) {
-      realm.delete(entity);
-    }
+    realm.write(() {
+      final entity = realm.find<T>(id);
+      if (entity != null) {
+        realm.delete(entity);
+      }
+    });
   }
 
   /// Clears every persisted object type in [config].

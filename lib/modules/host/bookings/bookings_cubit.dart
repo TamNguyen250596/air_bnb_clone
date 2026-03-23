@@ -86,7 +86,7 @@ class BookingsCubit extends Cubit<BookingsState> {
   void selectPosting(BaseItemModel posting) async {
     final entity = posting.object as Posting;
     if (!entity.isValid) return;
-    final bookings = await _bookingRepository.getBookingsByPostingId(entity.id);
+    final bookings = await _bookingRepository.getBookingsForPosting(entity.id);
     final selectableDates = _getSelectableDates(bookings);
     final DateTime? firstDate;
     if (selectableDates.isNotEmpty) {

@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
-import 'package:air_bnb_clone/data/repositories/user_repository.dart';
 import 'package:bloc/bloc.dart';
 import '../../../data/models/realm_models/user/user.dart';
 

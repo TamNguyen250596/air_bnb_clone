@@ -1,9 +1,13 @@
 import '../../models/realm_models/booking/booking.dart';
 import '../../models/realm_models/booking/booking_extensions.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting_extensions.dart';
 import '../../models/realm_models/message/message.dart';
 import '../../models/realm_models/message/message_extensions.dart';
 import '../../models/realm_models/posting/posting.dart';
 import '../../models/realm_models/posting/posting_extensions.dart';
+import '../../models/realm_models/review/review.dart';
+import '../../models/realm_models/review/review_extensions.dart';
 import '../../models/realm_models/user/user.dart';
 import '../../models/realm_models/user/user_extensions.dart';
 import 'realm_relationship.dart';
@@ -128,6 +132,16 @@ class RealmRelationshipRegistry {
     Booking: RealmRelationshipHelper(
       outgoing: BookingRelationshipExtension.realmOutgoingRelationships,
       incoming: BookingRelationshipExtension.realmIncomingRelationships,
+    ),
+    FavouritePosting: RealmRelationshipHelper(
+      outgoing:
+          FavouritePostingRelationshipExtension.realmOutgoingRelationships,
+      incoming:
+          FavouritePostingRelationshipExtension.realmIncomingRelationships,
+    ),
+    Review: RealmRelationshipHelper(
+      outgoing: ReviewRelationshipExtension.realmOutgoingRelationships,
+      incoming: ReviewRelationshipExtension.realmIncomingRelationships,
     ),
     Message: RealmRelationshipHelper(
       outgoing: MessageRelationshipExtension.realmOutgoingRelationships,
