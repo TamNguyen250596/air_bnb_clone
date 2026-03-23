@@ -10,8 +10,11 @@ import '../../../commons/widgets/posting_info_item.dart';
 import '../../../routing/route_id.dart';
 
 class ViewPostingScreen extends StatelessWidget {
+
+  // ========== Constructor ==========
   const ViewPostingScreen({super.key});
 
+  // ========== Navigation ==========
   Future<void> _navigateToBookPosting(BuildContext context) async {
     final cubit = context.read<ViewPostingCubit>();
     final state = cubit.state;
@@ -28,6 +31,21 @@ class ViewPostingScreen extends StatelessWidget {
     if (bookingTimeMap != null) {
       cubit.updateBookingTimeMap(bookingTimeMap);
     }
+  }
+
+  // ========== Content ==========
+  Widget _appBarAction() {
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => !state.isHost ? IconButton(
+        icon: Icon(
+            Icons.favorite_border,
+            color: state.isFavorite ? Colors.red : Colors.white
+        ),
+        onPressed: () {
+          context.read<ViewPostingCubit>().toggleFavourite();
+        },
+      ) : Container(),
+    );
   }
 
   Widget _imagesHeaderView(BuildContext context) {
@@ -353,7 +371,12 @@ class ViewPostingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: "Posting Details"),
+      appBar: CustomAppBar(
+        title: "Posting Details",
+        actions: [
+          _appBarAction()
+        ]
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 80),
         child: Column(

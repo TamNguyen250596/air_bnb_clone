@@ -22,15 +22,15 @@ class FirestoreQueryBuilder {
   }
 
   Query<Map<String, dynamic>> build(FirebaseFirestore firestore) {
-    var stream = firestore.collection(_collection);
+    Query<Map<String, dynamic>> query = firestore.collection(_collection);
 
     if (_filter != null) {
-      stream.where(_filter!);
+      query = query.where(_filter!);
     } else {
       for (final (field, value) in _equalQueries) {
-        stream.where(field, isEqualTo: value);
+        query = query.where(field, isEqualTo: value);
       }
     }
-    return stream;
+    return query;
   }
 }

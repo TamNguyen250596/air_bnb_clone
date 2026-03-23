@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../../models/realm_models/booking/booking.dart';
 import '../../models/realm_models/booking/booking_extensions.dart';
 import '../../models/realm_models/conversation/conversation.dart';
 import '../../models/realm_models/conversation/conversation_extensions.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting_extensions.dart';
 import '../../models/realm_models/message/message.dart';
 import '../../models/realm_models/message/message_extensions.dart';
 import '../../models/realm_models/posting/posting.dart';
@@ -18,6 +19,7 @@ class FirestoreMapper {
     Booking: (map) => BookingFirestoreHelper.fromFirestore(map),
     Message: (map) => MessageFirestoreHelper.fromFirestore(map),
     Conversation: (map) => ConversationFirestoreHelper.fromFirestore(map),
+    FavouritePosting: (map) => FavouritePostingFirestoreHelper.fromFirestore(map),
   };
 
   static T fromMap<T>(Map<String, dynamic> map) {
@@ -50,6 +52,7 @@ class FirestoreMapper {
     Message: (message) => (message as Message).toFirestore(),
     Conversation: (conversation) =>
         (conversation as Conversation).toFirestore(),
+    FavouritePosting: (fp) => (fp as FavouritePosting).toFirestore(),
   };
 
   static Map<String, dynamic> convert<T>(T instance) {

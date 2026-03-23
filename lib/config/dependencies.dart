@@ -5,6 +5,7 @@ import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../data/repositories/booking_repository.dart';
+import '../data/repositories/favourite_posting_repository.dart';
 import '../data/repositories/conversation_repository.dart';
 import '../data/repositories/media_repository.dart';
 import '../data/repositories/message_repository.dart';
@@ -48,6 +49,12 @@ List<SingleChildWidget> get providers {
     Provider<BookingRepository>(
       create: (context) =>
       BookingRepositoryImpl(
+        firestoreService: context.read(),
+        realmManager: context.read(),
+      ),
+    ),
+    Provider<FavouritePostingRepository>(
+      create: (context) => FavouritePostingRepositoryImpl(
         firestoreService: context.read(),
         realmManager: context.read(),
       ),

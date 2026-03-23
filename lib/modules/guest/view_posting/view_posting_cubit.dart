@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:air_bnb_clone/data/models/item/base_item_model.dart';
 import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
+import 'package:air_bnb_clone/data/repositories/favourite_posting_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
@@ -8,6 +9,7 @@ import '../../../data/models/realm_models/posting/posting.dart';
 
 class ViewPostingState {
   const ViewPostingState({
+    this.isFavorite = false,
     this.displayImages = const [],
     this.title = "",
     this.description = "",
@@ -25,6 +27,7 @@ class ViewPostingState {
     this.bookingTimeMap = const {},
   }) : propertyLatLong = propertyLatLong ?? const LatLng(37.42796133580664, -122.085749655962);
 
+  final bool isFavorite;
   final List<String> displayImages;
   final String title;
   final String description;
@@ -42,6 +45,7 @@ class ViewPostingState {
   final Map<String, DateTime> bookingTimeMap;
 
   ViewPostingState copyWith({
+    bool isFavorite = false,
     List<String>? displayImages,
     String? title,
     String? description,
@@ -59,6 +63,7 @@ class ViewPostingState {
     Map<String, DateTime>? bookingTimeMap,
   }) {
     return ViewPostingState(
+      isFavorite: isFavorite,
       displayImages: displayImages ?? this.displayImages,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -81,14 +86,17 @@ class ViewPostingState {
 class ViewPostingCubit extends Cubit<ViewPostingState> {
   ViewPostingCubit({
     required AuthRepository authRepository,
+    required FavouritePostingRepository favouritePostingRepository,
     required Posting posting,
   })  : _authRepository = authRepository,
+        _favouritePostingRepository = favouritePostingRepository,
         _posting = posting,
         super(const ViewPostingState()) {
     _setupInitialValues();
   }
 
   final AuthRepository _authRepository;
+  final FavouritePostingRepository _favouritePostingRepository;
   final Posting _posting;
   Timer? _displayAddressTimer;
 
@@ -165,6 +173,12 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
     _authRepository.userId.then((userId) {
       final isHost = userId == _posting.hostId;
       emit(state.copyWith(isHost: isHost));
+
+      if (userId != null) {
+        _favouritePostingRepository.getFavouritePosting(userId, _posting.id).then((favouritePosting) {
+          emit(state.copyWith(isFavorite: favouritePosting != null));
+        });
+      }
     });
 
     final price = _posting.price != null ? "\$${_posting.price!.toStringAsFixed(0)}" : "";
@@ -200,5 +214,19 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
       price: price,
       name: name,
     ));
+  }
+
+  Future<void> toggleFavourite() async {
+    if (state.isHost) return;
+    if (state.isFavorite) return;
+    final userId = await _authRepository.userId;
+    if (userId == null) return;
+    final data = {
+      "user_id": userId,
+      "posting_id": _posting.id,
+      "created_at": DateTime.now().toIso8601String()
+    };
+    await _favouritePostingRepository.createFavouritePosting(data);
+    emit(state.copyWith(isFavorite: true));
   }
 }

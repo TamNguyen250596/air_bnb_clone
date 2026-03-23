@@ -1,7 +1,6 @@
 import 'package:air_bnb_clone/routing/route_id.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 import '../modules/guest/home/current_user_cubit.dart';
 import '../data/models/realm_models/posting/posting.dart';
 import '../data/repositories/auth_repository.dart';
@@ -94,6 +93,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                 return BlocProvider(
                   create: (_) => ViewPostingCubit(
                     authRepository: context.read(),
+                    favouritePostingRepository: context.read(),
                     posting: state.extra as Posting,
                   ),
                   child: const ViewPostingScreen(),
@@ -127,7 +127,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.saved,
           builder: (context, state) {
             return BlocProvider(
-              create: (_) => SavedCubit(),
+              create: (_) => SavedCubit(
+                favouritePostingRepository: context.read(),
+                authRepository: context.read(),
+              ),
               child: const SavedScreen(),
             );
           },

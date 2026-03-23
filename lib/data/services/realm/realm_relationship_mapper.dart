@@ -1,5 +1,7 @@
 import '../../models/realm_models/booking/booking.dart';
 import '../../models/realm_models/booking/booking_extensions.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting.dart';
+import '../../models/realm_models/favourite_posting/favourite_posting_extensions.dart';
 import '../../models/realm_models/message/message.dart';
 import '../../models/realm_models/message/message_extensions.dart';
 import '../../models/realm_models/posting/posting.dart';
@@ -128,6 +130,12 @@ class RealmRelationshipRegistry {
     Booking: RealmRelationshipHelper(
       outgoing: BookingRelationshipExtension.realmOutgoingRelationships,
       incoming: BookingRelationshipExtension.realmIncomingRelationships,
+    ),
+    FavouritePosting: RealmRelationshipHelper(
+      outgoing:
+          FavouritePostingRelationshipExtension.realmOutgoingRelationships,
+      incoming:
+          FavouritePostingRelationshipExtension.realmIncomingRelationships,
     ),
     Message: RealmRelationshipHelper(
       outgoing: MessageRelationshipExtension.realmOutgoingRelationships,

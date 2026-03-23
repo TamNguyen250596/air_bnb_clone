@@ -1,5 +1,6 @@
 import 'package:air_bnb_clone/data/services/realm/realm_relationship.dart';
 import '../booking/booking.dart';
+import '../favourite_posting/favourite_posting.dart';
 import '../message/message.dart';
 import '../posting/posting.dart';
 import 'user.dart';
@@ -33,6 +34,7 @@ extension UserRelationshipExtension on User {
   static List<RealmRelationship> get realmIncomingRelationships => [
         RealmRelationship<Posting>('hostId', 'host'),
         RealmRelationship<Booking>('userId', 'user'),
+        RealmRelationship<FavouritePosting>('userId', 'user'),
         RealmRelationship<Message>('senderId', 'sender'),
       ];
 }
