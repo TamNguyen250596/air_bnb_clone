@@ -1,5 +1,5 @@
 import 'package:air_bnb_clone/commons/widgets/custom_app_bar.dart';
-import 'package:air_bnb_clone/commons/widgets/review_form.dart';
+import 'package:air_bnb_clone/commons/widgets/reviews_section_card.dart';
 import 'package:air_bnb_clone/modules/guest/view_posting/view_posting_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -10,15 +10,17 @@ import '../../../commons/widgets/posting_info_item.dart';
 import '../../../routing/route_id.dart';
 
 class ViewPostingScreen extends StatelessWidget {
+  // ========== Constructor ==========
   const ViewPostingScreen({super.key});
 
+  // ========== Navigation ==========
   Future<void> _navigateToBookPosting(BuildContext context) async {
     final cubit = context.read<ViewPostingCubit>();
     final state = cubit.state;
     final Map<String, dynamic> extra = {
       "name": state.name,
       "dates": Map<String, DateTime>.from(state.bookingTimeMap),
-      "posting": cubit.posting
+      "posting": cubit.posting,
     };
 
     final bookingTimeMap = await context.pushNamed<Map<String, DateTime>>(
@@ -28,6 +30,46 @@ class ViewPostingScreen extends StatelessWidget {
     if (bookingTimeMap != null) {
       cubit.updateBookingTimeMap(bookingTimeMap);
     }
+  }
+
+  void _navigateToViewReview(BuildContext context) {
+    final cubit = context.read<ViewPostingCubit>();
+    final posting = cubit.posting;
+    if (!posting.isValid) return;
+    final Map<String, dynamic> extra = {
+      "targetType": "posting",
+      "targetId": posting.id,
+    };
+    context.pushNamed(RouteConstant.viewReview, extra: extra);
+  }
+
+  void _navigateToViewProfile(BuildContext context) {
+    final cubit = context.read<ViewPostingCubit>();
+    final host = cubit.posting.host;
+    final canReview = cubit.state.canReview;
+    if (host == null || !host.isValid) return;
+    final Map<String, dynamic> extra = {
+      "host": host,
+      "canReview": canReview,
+    };
+    context.pushNamed(RouteConstant.viewProfile, extra: extra);
+  }
+
+  // ========== Content ==========
+  Widget _appBarAction() {
+    return BlocBuilder<ViewPostingCubit, ViewPostingState>(
+      builder: (context, state) => !state.isHost
+          ? IconButton(
+              icon: Icon(
+                Icons.favorite_border,
+                color: state.isFavorite ? Colors.red : Colors.white,
+              ),
+              onPressed: () {
+                context.read<ViewPostingCubit>().toggleFavourite();
+              },
+            )
+          : Container(),
+    );
   }
 
   Widget _imagesHeaderView(BuildContext context) {
@@ -86,7 +128,7 @@ class ViewPostingScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionCard(String title, Widget child) {
+  Widget _sectionCard(String title, Widget child, {Widget? rightButton}) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -98,9 +140,15 @@ class ViewPostingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, color: Colors.white),
+          Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              const Spacer(),
+              if (rightButton != null) rightButton,
+            ],
           ),
           const SizedBox(height: 10),
           child,
@@ -146,10 +194,7 @@ class ViewPostingScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              state.address,
-              style: const TextStyle(color: Colors.white70),
-            ),
+            Text(state.address, style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 10),
             Stack(
               children: [
@@ -215,48 +260,51 @@ class ViewPostingScreen extends StatelessWidget {
       builder: (context, state) {
         final host = context.read<ViewPostingCubit>().posting.host;
         if (host == null) return const SizedBox.shrink();
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[850],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                "Hosted by",
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: host.imageUrl ?? '',
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => SizedBox(
-                    width: 70,
-                    height: 70,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    width: 70,
-                    height: 70,
-                    color: Colors.grey[800],
-                    child: Icon(Icons.person, color: Colors.white, size: 40),
+        return GestureDetector(
+          onTap: () => _navigateToViewProfile(context),
+          child: Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "Hosted by",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(state.hostName),
-            ],
+                const SizedBox(height: 12),
+                ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: host.imageUrl ?? '',
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => SizedBox(
+                      width: 70,
+                      height: 70,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 70,
+                      height: 70,
+                      color: Colors.grey[800],
+                      child: Icon(Icons.person, color: Colors.white, size: 40),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(state.hostName),
+              ],
+            ),
           ),
         );
       },
@@ -266,12 +314,20 @@ class ViewPostingScreen extends StatelessWidget {
   Widget _reviewSection(BuildContext context) {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
       builder: (context, state) {
-        return _sectionCard("Reviews", Column(children: [
-          ReviewForm(
-            initialRating: state.reviewRating,
-            onRatingChanged: (v) => context.read<ViewPostingCubit>().setReviewRating(v),
+        return ReviewsSectionCard(
+          trailing: ReviewsSectionForwardIconButton(
+            onPressed: () => _navigateToViewReview(context),
           ),
-        ]));
+          child: ReviewsSectionContent(
+            canReview: state.canReview,
+            reviewRating: state.reviewRating,
+            recentReviews: state.recentReviews,
+            onRatingChanged: (v) =>
+                context.read<ViewPostingCubit>().setReviewRating(v),
+            onSubmitted: (comment) =>
+                context.read<ViewPostingCubit>().submitReview(comment),
+          ),
+        );
       },
     );
   }
@@ -319,7 +375,9 @@ class ViewPostingScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 14),
+                            horizontal: 32,
+                            vertical: 14,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -331,8 +389,10 @@ class ViewPostingScreen extends StatelessWidget {
                         ),
                       )
                     : Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey,
                           borderRadius: BorderRadius.circular(10),
@@ -353,9 +413,12 @@ class ViewPostingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: "Posting Details"),
+      appBar: CustomAppBar(
+        title: "Posting Details",
+        actions: [_appBarAction()],
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: const EdgeInsets.only(bottom: 16),
         child: Column(
           children: [
             _imagesHeaderView(context),

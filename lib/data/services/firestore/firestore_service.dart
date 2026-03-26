@@ -70,7 +70,7 @@ class FireStoreService {
         final realmObject = FirestoreMapper.fromDocumentSnapshot<T>(event);
         _realmManager.createFromEntity(realmObject, update: true);
       } else {
-        _realmManager.deleteEntity(id);
+        _realmManager.deleteEntity<T>(id);
       }
     });
   }
@@ -109,6 +109,17 @@ class FireStoreService {
       final realmObject = FirestoreMapper.fromMap<T>(data);
       _realmManager.createFromEntity(realmObject, update: true);
     } catch(e) {
+      developer.log('', error: e);
+      rethrow;
+    }
+  }
+
+  // Delete
+  Future<void> deleteDoc<T extends RealmObject>(String collection, String id) async {
+    try {
+      await FirebaseFirestore.instance.doc("$collection/$id").delete();
+      _realmManager.deleteEntity<T>(id);
+    } catch (e) {
       developer.log('', error: e);
       rethrow;
     }
