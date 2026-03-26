@@ -29,6 +29,8 @@ import '../modules/guest/view_posting/view_posting_cubit.dart';
 import '../modules/guest/view_posting/view_posting_screen.dart';
 import '../modules/guest/view_review/view_review_cubit.dart';
 import '../modules/guest/view_review/view_review_screen.dart';
+import '../modules/host/view_profile/view_profile_cubit.dart';
+import '../modules/host/view_profile/view_profile_screen.dart';
 import '../modules/host/home/host_home_screen.dart';
 import '../modules/host/bookings/bookings_cubit.dart';
 import '../modules/host/bookings/bookings_screen.dart';
@@ -134,7 +136,21 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
                       child: const ViewReviewScreen(),
                     );
                   }
-                )
+                ),
+                _route(
+                  RouteConstant.viewProfile,
+                  builder: (context, state) {
+                    final extra = state.extra as Map<String, dynamic>;
+                    return BlocProvider(
+                      create: (_) => ViewProfileCubit(
+                        extra: extra,
+                        authRepository: context.read(),
+                        reviewRepository: context.read(),
+                      ),
+                      child: const ViewProfileScreen(),
+                    );
+                  },
+                ),
               ],
             ),
           ],

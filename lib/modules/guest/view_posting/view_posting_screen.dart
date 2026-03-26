@@ -43,6 +43,18 @@ class ViewPostingScreen extends StatelessWidget {
     context.pushNamed(RouteConstant.viewReview, extra: extra);
   }
 
+  void _navigateToViewProfile(BuildContext context) {
+    final cubit = context.read<ViewPostingCubit>();
+    final host = cubit.posting.host;
+    final canReview = cubit.state.canReview;
+    if (host == null || !host.isValid) return;
+    final Map<String, dynamic> extra = {
+      "host": host,
+      "canReview": canReview,
+    };
+    context.pushNamed(RouteConstant.viewProfile, extra: extra);
+  }
+
   // ========== Content ==========
   Widget _appBarAction() {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
@@ -248,48 +260,51 @@ class ViewPostingScreen extends StatelessWidget {
       builder: (context, state) {
         final host = context.read<ViewPostingCubit>().posting.host;
         if (host == null) return const SizedBox.shrink();
-        return Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[850],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                "Hosted by",
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: host.imageUrl ?? '',
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => SizedBox(
-                    width: 70,
-                    height: 70,
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    width: 70,
-                    height: 70,
-                    color: Colors.grey[800],
-                    child: Icon(Icons.person, color: Colors.white, size: 40),
+        return GestureDetector(
+          onTap: () => _navigateToViewProfile(context),
+          child: Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "Hosted by",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(state.hostName),
-            ],
+                const SizedBox(height: 12),
+                ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: host.imageUrl ?? '',
+                    width: 70,
+                    height: 70,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => SizedBox(
+                      width: 70,
+                      height: 70,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 70,
+                      height: 70,
+                      color: Colors.grey[800],
+                      child: Icon(Icons.person, color: Colors.white, size: 40),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(state.hostName),
+              ],
+            ),
           ),
         );
       },
@@ -403,7 +418,7 @@ class ViewPostingScreen extends StatelessWidget {
         actions: [_appBarAction()],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: const EdgeInsets.only(bottom: 16),
         child: Column(
           children: [
             _imagesHeaderView(context),
