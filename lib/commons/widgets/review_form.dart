@@ -7,20 +7,30 @@ class ReviewForm extends StatefulWidget {
     super.key,
     required this.onRatingChanged,
     this.initialRating = 0.0,
+    this.onSubmitted,
   });
 
   /// Called when the user changes the rating.
   final ValueChanged<double> onRatingChanged;
-
   final double initialRating;
+  final ValueChanged<String>? onSubmitted;
 
   @override
   State<ReviewForm> createState() => _ReviewFormState();
 }
 
 class _ReviewFormState extends State<ReviewForm> {
+
   // Properties
+  double _rating = 0.0;
   final TextEditingController _controller = TextEditingController();
+
+  // Life cycle
+  @override
+  void initState() {
+    super.initState();
+    _rating = widget.initialRating;
+  }
 
   // Content
   @override
@@ -46,14 +56,15 @@ class _ReviewFormState extends State<ReviewForm> {
                       hintText: 'write here...',
                     ),
                     maxLines: 1,
+                    controller: _controller,
                     style: const TextStyle(
                       fontSize: 16,
                     ),
-                    controller: _controller,
-                    validator: (text){
-                      if(text!.isEmpty){
+                    validator: (text) {
+                      if (text!.isEmpty) {
                         return "Please enter some text";
                       }
+                      return null;
                     },
                   ),
                   Row(
@@ -64,17 +75,30 @@ class _ReviewFormState extends State<ReviewForm> {
                         child: RatingBar(
                           size: 40.0,
                           maxRating: 5,
-                          initialRating: widget.initialRating,
+                          initialRating: _rating,
                           filledIcon: Icons.star,
                           emptyIcon: Icons.star_border,
                           filledColor: Colors.green,
-                          onRatingChanged: widget.onRatingChanged,
+                          onRatingChanged: (value) => {
+                            setState(() {
+                              _rating = value;
+                            }),
+                            widget.onRatingChanged(value),
+                          },
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
                         child: MaterialButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            if (_controller.text.isNotEmpty) {
+                              widget.onSubmitted!(_controller.text);
+                              _controller.clear();
+                              setState(() {
+                                _rating = 0.0;
+                              });
+                            }
+                          },
                           color: Colors.black,
                           child: const Text(
                             'Submit',

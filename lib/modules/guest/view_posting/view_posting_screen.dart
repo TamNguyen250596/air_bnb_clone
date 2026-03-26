@@ -1,5 +1,5 @@
 import 'package:air_bnb_clone/commons/widgets/custom_app_bar.dart';
-import 'package:air_bnb_clone/commons/widgets/review_form.dart';
+import 'package:air_bnb_clone/commons/widgets/reviews_section_card.dart';
 import 'package:air_bnb_clone/modules/guest/view_posting/view_posting_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,6 @@ import '../../../commons/widgets/posting_info_item.dart';
 import '../../../routing/route_id.dart';
 
 class ViewPostingScreen extends StatelessWidget {
-
   // ========== Constructor ==========
   const ViewPostingScreen({super.key});
 
@@ -21,7 +20,7 @@ class ViewPostingScreen extends StatelessWidget {
     final Map<String, dynamic> extra = {
       "name": state.name,
       "dates": Map<String, DateTime>.from(state.bookingTimeMap),
-      "posting": cubit.posting
+      "posting": cubit.posting,
     };
 
     final bookingTimeMap = await context.pushNamed<Map<String, DateTime>>(
@@ -33,18 +32,31 @@ class ViewPostingScreen extends StatelessWidget {
     }
   }
 
+  void _navigateToViewReview(BuildContext context) {
+    final cubit = context.read<ViewPostingCubit>();
+    final posting = cubit.posting;
+    if (!posting.isValid) return;
+    final Map<String, dynamic> extra = {
+      "targetType": "posting",
+      "targetId": posting.id,
+    };
+    context.pushNamed(RouteConstant.viewReview, extra: extra);
+  }
+
   // ========== Content ==========
   Widget _appBarAction() {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
-      builder: (context, state) => !state.isHost ? IconButton(
-        icon: Icon(
-            Icons.favorite_border,
-            color: state.isFavorite ? Colors.red : Colors.white
-        ),
-        onPressed: () {
-          context.read<ViewPostingCubit>().toggleFavourite();
-        },
-      ) : Container(),
+      builder: (context, state) => !state.isHost
+          ? IconButton(
+              icon: Icon(
+                Icons.favorite_border,
+                color: state.isFavorite ? Colors.red : Colors.white,
+              ),
+              onPressed: () {
+                context.read<ViewPostingCubit>().toggleFavourite();
+              },
+            )
+          : Container(),
     );
   }
 
@@ -104,7 +116,7 @@ class ViewPostingScreen extends StatelessWidget {
     );
   }
 
-  Widget _sectionCard(String title, Widget child) {
+  Widget _sectionCard(String title, Widget child, {Widget? rightButton}) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -116,9 +128,15 @@ class ViewPostingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 20, color: Colors.white),
+          Row(
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              const Spacer(),
+              if (rightButton != null) rightButton,
+            ],
           ),
           const SizedBox(height: 10),
           child,
@@ -164,10 +182,7 @@ class ViewPostingScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              state.address,
-              style: const TextStyle(color: Colors.white70),
-            ),
+            Text(state.address, style: const TextStyle(color: Colors.white70)),
             const SizedBox(height: 10),
             Stack(
               children: [
@@ -284,12 +299,20 @@ class ViewPostingScreen extends StatelessWidget {
   Widget _reviewSection(BuildContext context) {
     return BlocBuilder<ViewPostingCubit, ViewPostingState>(
       builder: (context, state) {
-        return _sectionCard("Reviews", Column(children: [
-          ReviewForm(
-            initialRating: state.reviewRating,
-            onRatingChanged: (v) => context.read<ViewPostingCubit>().setReviewRating(v),
+        return ReviewsSectionCard(
+          trailing: ReviewsSectionForwardIconButton(
+            onPressed: () => _navigateToViewReview(context),
           ),
-        ]));
+          child: ReviewsSectionContent(
+            canReview: state.canReview,
+            reviewRating: state.reviewRating,
+            recentReviews: state.recentReviews,
+            onRatingChanged: (v) =>
+                context.read<ViewPostingCubit>().setReviewRating(v),
+            onSubmitted: (comment) =>
+                context.read<ViewPostingCubit>().submitReview(comment),
+          ),
+        );
       },
     );
   }
@@ -337,7 +360,9 @@ class ViewPostingScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 14),
+                            horizontal: 32,
+                            vertical: 14,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -349,8 +374,10 @@ class ViewPostingScreen extends StatelessWidget {
                         ),
                       )
                     : Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.grey,
                           borderRadius: BorderRadius.circular(10),
@@ -373,9 +400,7 @@ class ViewPostingScreen extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: "Posting Details",
-        actions: [
-          _appBarAction()
-        ]
+        actions: [_appBarAction()],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 80),

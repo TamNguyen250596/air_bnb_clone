@@ -3,6 +3,7 @@ class RealmQueryBuilder {
   int _queryNumber = 0;
   String _queryString = "";
   final List<dynamic> _queryValues = <dynamic>[];
+  int? _limit;
 
   RealmQueryBuilder equal(String field, dynamic value) {
     if (_queryNumber > 0) {
@@ -78,8 +79,29 @@ class RealmQueryBuilder {
     return this;
   }
 
+  /// Appends Realm `SORT(field DESC)`. Call after filter clauses (e.g. [equal]).
+  RealmQueryBuilder sortDescending(String field) {
+    if (_queryString.isEmpty) {
+      _queryString = 'TRUEPREDICATE SORT($field DESC)';
+    } else {
+      _queryString += ' SORT($field DESC)';
+    }
+    return this;
+  }
+
+  /// Appends Realm `LIMIT(n)`. Call after filters and sort.
+  RealmQueryBuilder limit(int maxResults) {
+    _limit = maxResults;
+    return this;
+  }
+
   String getQueryString() {
-    return _queryString.isEmpty ? "TRUEPREDICATE" : _queryString;
+    var s = _queryString.isEmpty ? "TRUEPREDICATE" : _queryString;
+    final lim = _limit;
+    if (lim != null && lim > 0) {
+      s += ' LIMIT($lim)';
+    }
+    return s;
   }
 
   List<dynamic> getQueryValues() {

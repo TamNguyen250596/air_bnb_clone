@@ -11,9 +11,23 @@ import 'package:bloc/bloc.dart';
 import 'package:realm/realm.dart';
 
 class SavedState {
-  const SavedState({this.postings = const []});
+  const SavedState({
+    this.postings = const [],
+    this.isLoading = false,
+  });
 
   final List<PostingGridItemModel> postings;
+  final bool isLoading;
+
+  SavedState copyWith({
+    List<PostingGridItemModel>? postings,
+    bool? isLoading,
+  }) {
+    return SavedState(
+      postings: postings ?? this.postings,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
 }
 
 class SavedCubit extends Cubit<SavedState> {
@@ -22,7 +36,7 @@ class SavedCubit extends Cubit<SavedState> {
     required AuthRepository authRepository,
   })  : _favouritePostingRepository = favouritePostingRepository,
         _authRepository = authRepository,
-        super(const SavedState()) {
+        super(const SavedState(isLoading: true)) {
     _observeFavourites();
   }
 
@@ -33,15 +47,22 @@ class SavedCubit extends Cubit<SavedState> {
   Future<void> _observeFavourites() async {
     final userId = await _authRepository.userId;
     if (userId == null) {
-      emit(const SavedState(postings: []));
+      emit(const SavedState(postings: [], isLoading: false));
       return;
     }
+
+    emit(const SavedState(postings: [], isLoading: true));
 
     _favouritesSubscription = _favouritePostingRepository
         .observeFavouritePostings(userId)
         .firstThenDebounce(const Duration(milliseconds: 500))
         .listen((changes) {
-      emit(SavedState(postings: _favouritesToGridItems(changes.results)));
+      emit(
+        state.copyWith(
+          postings: _favouritesToGridItems(changes.results),
+          isLoading: false,
+        ),
+      );
     });
   }
 
@@ -87,6 +108,7 @@ class SavedCubit extends Cubit<SavedState> {
   }
 
   Future<void> deleteSavedFavourite(PostingGridItemModel item) async {
+    emit(state.copyWith(isLoading: true));
     final o = item.object;
     if (o is! FavouritePosting) {
       return;
@@ -95,6 +117,8 @@ class SavedCubit extends Cubit<SavedState> {
       await _favouritePostingRepository.deleteFavouritePosting(o.id);
     } catch (e, st) {
       developer.log('deleteSavedFavourite failed', error: e, stackTrace: st);
+    } finally {
+      emit(state.copyWith(isLoading: false));
     }
   }
 

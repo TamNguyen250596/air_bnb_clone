@@ -3,6 +3,7 @@ import '../booking/booking.dart';
 import '../favourite_posting/favourite_posting.dart';
 import '../message/message.dart';
 import '../posting/posting.dart';
+import '../review/review.dart';
 import 'user.dart';
 
 /// Extension methods for User model to handle Firestore conversions
@@ -35,6 +36,7 @@ extension UserRelationshipExtension on User {
         RealmRelationship<Posting>('hostId', 'host'),
         RealmRelationship<Booking>('userId', 'user'),
         RealmRelationship<FavouritePosting>('userId', 'user'),
+        RealmRelationship<Review>('userId', 'user'),
         RealmRelationship<Message>('senderId', 'sender'),
       ];
 }

@@ -25,6 +25,7 @@ abstract class RouteConstant {
   /// Explore
   static final String viewPosting = "view_posting";
   static final String bookPosting = "book_posting";
+  static final String viewReview = "view_review";
 
   /// Host
   static final String bookings = "bookings";

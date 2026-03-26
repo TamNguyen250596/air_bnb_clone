@@ -5,4 +5,5 @@ abstract class FirestoreCollection {
   static const String conversation = "conversations";
   static const String message = "messages";
   static const String favouritePosting = "favourite_postings";
+  static const String review = "reviews";
 }

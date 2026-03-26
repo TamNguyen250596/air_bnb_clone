@@ -10,6 +10,7 @@ import '../data/repositories/conversation_repository.dart';
 import '../data/repositories/media_repository.dart';
 import '../data/repositories/message_repository.dart';
 import '../data/repositories/posting_repository.dart';
+import '../data/repositories/review_repository.dart';
 import '../data/repositories/user_repository.dart';
 import '../data/repositories/stripe_payment_intent_repository.dart';
 import '../data/services/media_service.dart';
@@ -55,6 +56,12 @@ List<SingleChildWidget> get providers {
     ),
     Provider<FavouritePostingRepository>(
       create: (context) => FavouritePostingRepositoryImpl(
+        firestoreService: context.read(),
+        realmManager: context.read(),
+      ),
+    ),
+    Provider<ReviewRepository>(
+      create: (context) => ReviewRepositoryImpl(
         firestoreService: context.read(),
         realmManager: context.read(),
       ),

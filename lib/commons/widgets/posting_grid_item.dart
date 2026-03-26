@@ -30,17 +30,20 @@ class PostingGridItem extends StatelessWidget {
   }
 
   Widget _buildClearButton(VoidCallback onPressed) {
-    return Container(
-      width: 30,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white54,
-      ),
-      child: IconButton(
-        onPressed: onPressed,
-        padding: EdgeInsets.zero,
-        icon: const Icon(Icons.clear, color: Colors.white),
-      ),
+    return Padding(
+      padding: const EdgeInsets.all(2),
+      child: Container(
+        width: 30,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white54,
+        ),
+        child: IconButton(
+          onPressed: onPressed,
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.clear, color: Colors.white),
+        ),
+      )
     );
   }
 

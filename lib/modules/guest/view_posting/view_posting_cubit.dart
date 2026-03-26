@@ -1,11 +1,19 @@
 import 'dart:async';
+
+import 'package:air_bnb_clone/commons/extensions/stream_extension.dart';
 import 'package:air_bnb_clone/data/models/item/base_item_model.dart';
+import 'package:air_bnb_clone/data/models/item/review_item_model.dart';
+import 'package:air_bnb_clone/data/models/realm_models/review/review.dart';
 import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
 import 'package:air_bnb_clone/data/repositories/favourite_posting_repository.dart';
+import 'package:air_bnb_clone/data/repositories/review_repository.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:realm/realm.dart';
+
 import '../../../data/models/realm_models/posting/posting.dart';
+import '../../../data/repositories/booking_repository.dart';
 
 class ViewPostingState {
   const ViewPostingState({
@@ -25,6 +33,8 @@ class ViewPostingState {
     this.price = "",
     this.name = "",
     this.bookingTimeMap = const {},
+    this.canReview = false,
+    this.recentReviews = const [],
   }) : propertyLatLong = propertyLatLong ?? const LatLng(37.42796133580664, -122.085749655962);
 
   final bool isFavorite;
@@ -43,6 +53,8 @@ class ViewPostingState {
   final String price;
   final String name;
   final Map<String, DateTime> bookingTimeMap;
+  final bool canReview;
+  final List<ReviewItemModel> recentReviews;
 
   ViewPostingState copyWith({
     bool isFavorite = false,
@@ -61,6 +73,8 @@ class ViewPostingState {
     String? price,
     String? name,
     Map<String, DateTime>? bookingTimeMap,
+    bool? canReview,
+    List<ReviewItemModel>? recentReviews,
   }) {
     return ViewPostingState(
       isFavorite: isFavorite,
@@ -79,6 +93,8 @@ class ViewPostingState {
       price: price ?? this.price,
       name: name ?? this.name,
       bookingTimeMap: bookingTimeMap ?? this.bookingTimeMap,
+      canReview: canReview ?? this.canReview,
+      recentReviews: recentReviews ?? this.recentReviews,
     );
   }
 }
@@ -87,9 +103,13 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
   ViewPostingCubit({
     required AuthRepository authRepository,
     required FavouritePostingRepository favouritePostingRepository,
+    required BookingRepository bookingRepository,
+    required ReviewRepository reviewRepository,
     required Posting posting,
   })  : _authRepository = authRepository,
         _favouritePostingRepository = favouritePostingRepository,
+        _bookingRepository = bookingRepository,
+        _reviewRepository = reviewRepository,
         _posting = posting,
         super(const ViewPostingState()) {
     _setupInitialValues();
@@ -97,14 +117,17 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
 
   final AuthRepository _authRepository;
   final FavouritePostingRepository _favouritePostingRepository;
+  final BookingRepository _bookingRepository;
+  final ReviewRepository _reviewRepository;
   final Posting _posting;
   Timer? _displayAddressTimer;
-
+  StreamSubscription<RealmResultsChanges<Review>>? _recentReviewsSubscription;
   Posting get posting => _posting;
 
   @override
-  Future<void> close() {
+  Future<void> close() async {
     _displayAddressTimer?.cancel();
+    await _recentReviewsSubscription?.cancel();
     return super.close();
   }
 
@@ -178,6 +201,9 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
         _favouritePostingRepository.getFavouritePosting(userId, _posting.id).then((favouritePosting) {
           emit(state.copyWith(isFavorite: favouritePosting != null));
         });
+        _bookingRepository.getBookingsForPosting(_posting.id, userId: userId).then((bookings) {
+          emit(state.copyWith(canReview: bookings.isNotEmpty));
+        });
       }
     });
 
@@ -214,6 +240,52 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
       price: price,
       name: name,
     ));
+
+    _observeRecentReviews();
+  }
+
+  void _observeRecentReviews() {
+    _recentReviewsSubscription?.cancel();
+    _recentReviewsSubscription = _reviewRepository
+        .observeReviewsForTarget(
+          targetType: 'posting',
+          targetId: _posting.id,
+          limit: 3,
+        )
+        .firstThenDebounce(const Duration(milliseconds: 500))
+        .listen((changes) {
+      emit(state.copyWith(recentReviews: _reviewsToItems(changes.results)));
+    });
+  }
+
+  List<ReviewItemModel> _reviewsToItems(RealmResults<Review> results) {
+    return results
+        .where((r) => r.isValid)
+        .map(
+          (review) => ReviewItemModel(
+            review.id,
+            rating: review.rating,
+            title: _reviewerDisplayName(review),
+            des: review.comment ?? '',
+            imageUrl: review.user?.imageUrl ?? '',
+            tag: 'review',
+            object: review,
+          ),
+        )
+        .toList();
+  }
+
+  String _reviewerDisplayName(Review review) {
+    final u = review.user;
+    if (u == null || !u.isValid) {
+      return 'Guest';
+    }
+    final full = u.fullName?.trim();
+    if (full != null && full.isNotEmpty) {
+      return full;
+    }
+    final combined = '${u.firstName ?? ''} ${u.lastName ?? ''}'.trim();
+    return combined.isEmpty ? 'Guest' : combined;
   }
 
   Future<void> toggleFavourite() async {
@@ -228,5 +300,21 @@ class ViewPostingCubit extends Cubit<ViewPostingState> {
     };
     await _favouritePostingRepository.createFavouritePosting(data);
     emit(state.copyWith(isFavorite: true));
+  }
+
+  Future<void> submitReview(String? comment) async {
+    if (comment == null) return;
+    final userId = await _authRepository.userId;
+    if (userId == null) return;
+    if (!posting.isValid) return;
+    final data = {
+      "user_id": userId,
+      "target_type": "posting",
+      "target_id": posting.id,
+      "rating": state.reviewRating,
+      "comment": comment,
+      "created_at": DateTime.now().millisecondsSinceEpoch,
+    };
+    await _reviewRepository.createReview(data);
   }
 }

@@ -21,38 +21,52 @@ class SavedScreen extends StatelessWidget {
       appBar: const CustomAppBar(title: 'Favorites'),
       body: BlocBuilder<SavedCubit, SavedState>(
         builder: (context, state) {
-          return GridView.builder(
-            physics: const ScrollPhysics(),
-            shrinkWrap: true,
-            padding: const EdgeInsets.all(16),
-            itemCount: state.postings.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-              childAspectRatio: 3 / 4,
-            ),
-            itemBuilder: (context, index) {
-              final item = state.postings[index];
-              final cubit = context.read<SavedCubit>();
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: GridView.builder(
+                  physics: const ScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: state.postings.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    childAspectRatio: 3 / 4,
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = state.postings[index];
+                    final cubit = context.read<SavedCubit>();
 
-              return BorderedContainer(
-                child: InkWell(
-                  onTap: () {
-                    final entity = cubit.getPostingEntity(item);
-                    if (entity != null) {
-                      _navigateToViewPostingPage(context, entity);
-                    }
+                    return BorderedContainer(
+                      child: InkWell(
+                        onTap: () {
+                          final entity = cubit.getPostingEntity(item);
+                          if (entity != null) {
+                            _navigateToViewPostingPage(context, entity);
+                          }
+                        },
+                        child: PostingGridItem(
+                          item: item,
+                          onClearPressed: () async {
+                            await cubit.deleteSavedFavourite(item);
+                          },
+                        ),
+                      ),
+                    );
                   },
-                  child: PostingGridItem(
-                    item: item,
-                    onClearPressed: () async {
-                      await cubit.deleteSavedFavourite(item);
-                    },
+                ),
+              ),
+              if (state.isLoading)
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                   ),
                 ),
-              );
-            },
+            ],
           );
         },
       ),

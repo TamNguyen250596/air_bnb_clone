@@ -8,6 +8,7 @@ import '../../models/realm_models/booking/booking.dart';
 import '../../models/realm_models/conversation/conversation.dart';
 import '../../models/realm_models/favourite_posting/favourite_posting.dart';
 import '../../models/realm_models/message/message.dart';
+import '../../models/realm_models/review/review.dart';
 import '../../models/realm_models/user/user.dart';
 
 class RealmService {
@@ -18,9 +19,10 @@ class RealmService {
       Booking.schema,
       FavouritePosting.schema,
       Message.schema,
+      Review.schema,
       Conversation.schema,
     ],
-    schemaVersion: 3,
+    schemaVersion: 4,
     shouldDeleteIfMigrationNeeded: true,
   );
 

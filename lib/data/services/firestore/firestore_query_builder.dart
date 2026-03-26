@@ -8,6 +8,8 @@ class FirestoreQueryBuilder {
   // Properties
   final String _collection;
   final List<(String, Object?)> _equalQueries = [];
+  final List<(String, bool)> _orderByQueries = [];
+  int? _limit;
   Filter? _filter;
 
   // Function
@@ -21,6 +23,16 @@ class FirestoreQueryBuilder {
     return this;
   }
 
+  FirestoreQueryBuilder orderBy(String field, {bool descending = false}) {
+    _orderByQueries.add((field, descending));
+    return this;
+  }
+
+  FirestoreQueryBuilder limit(int maxResults) {
+    _limit = maxResults;
+    return this;
+  }
+
   Query<Map<String, dynamic>> build(FirebaseFirestore firestore) {
     Query<Map<String, dynamic>> query = firestore.collection(_collection);
 
@@ -30,6 +42,13 @@ class FirestoreQueryBuilder {
       for (final (field, value) in _equalQueries) {
         query = query.where(field, isEqualTo: value);
       }
+    }
+    for (final (field, descending) in _orderByQueries) {
+      query = query.orderBy(field, descending: descending);
+    }
+    final lim = _limit;
+    if (lim != null && lim > 0) {
+      query = query.limit(lim);
     }
     return query;
   }
