@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../commons/widgets/custom_app_bar.dart';
+import '../../../routing/route_id.dart';
 import '../../../commons/widgets/text_snack_bar.dart';
 import 'account_cubit.dart';
 
@@ -17,11 +18,15 @@ class AccountScreen extends StatelessWidget {
     context.read<AccountCubit>().signOut();
   }
 
+  void _navigateToEditProfile(BuildContext context) {
+    context.pushNamed(RouteConstant.editProfile);
+  }
+
   Widget _avatar(BuildContext context) {
     return BlocBuilder<AccountCubit, AccountState>(
       builder: (context, state) {
         return GestureDetector(
-          onTap: () {},
+          onTap: () => _navigateToEditProfile(context),
           child: CachedNetworkImage(
             imageUrl: state.avatarUrl,
             placeholder: (context, url) => const CircularProgressIndicator(),

@@ -21,6 +21,7 @@ abstract class RouteConstant {
   static final String chat = "chat";
   static final String account = "account";
   static final String accountPath = "/${RouteConstant.account}";
+  static final String editProfile = "edit_profile";
 
   /// Explore
   static final String viewPosting = "view_posting";

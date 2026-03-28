@@ -8,6 +8,8 @@ class CustomTextField extends StatefulWidget {
   final IconData icon;
   final bool isPassword;
   final int maxLines;
+  final bool enable;
+  final String? initialValue;
 
   // ========== Constructor ==========
   const CustomTextField({
@@ -17,6 +19,8 @@ class CustomTextField extends StatefulWidget {
     required this.icon,
     this.isPassword = false,
     this.maxLines = 1,
+    this.enable = true,
+    this.initialValue,
   });
 
   // ========== Lifecycle ==========
@@ -36,6 +40,14 @@ class _CustomTextFieldState extends State<CustomTextField> {
     _obscure = widget.isPassword;
   }
 
+  @override
+  void didUpdateWidget(covariant CustomTextField oldWidget) {
+    if (widget.initialValue != null && widget.initialValue != oldWidget.initialValue) {
+      widget.controller.text = widget.initialValue!;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
   // ========== Build Method ==========
   @override
   Widget build(BuildContext context) {
@@ -51,6 +63,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           labelText: widget.label,
           labelStyle: const TextStyle(color: Colors.white70),
           filled: true,
+          enabled: widget.enable,
           fillColor: Colors.black,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           suffixIcon: widget.isPassword

@@ -25,6 +25,8 @@ import '../modules/guest/inbox/inbox_cubit.dart';
 import '../modules/guest/inbox/inbox_screen.dart';
 import '../modules/guest/account/account_cubit.dart';
 import '../modules/guest/account/account_screen.dart';
+import '../modules/guest/edit_profile/edit_profile_cubit.dart';
+import '../modules/guest/edit_profile/edit_profile_screen.dart';
 import '../modules/guest/view_posting/view_posting_cubit.dart';
 import '../modules/guest/view_posting/view_posting_screen.dart';
 import '../modules/guest/view_review/view_review_cubit.dart';
@@ -222,6 +224,21 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               child: const AccountScreen(),
             );
           },
+          routes: [
+            _route(
+              RouteConstant.editProfile,
+              builder: (context, state) {
+                return BlocProvider(
+                  create: (_) => EditProfileCubit(
+                    mediaRepository: context.read(),
+                    authRepository: context.read(),
+                    userRepository: context.read(),
+                  ),
+                  child: const EditProfileScreen(),
+                );
+              },
+            ),
+          ],
         ),
       ],
     ),
