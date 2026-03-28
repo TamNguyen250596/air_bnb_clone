@@ -325,7 +325,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
           name: RouteConstant.earnings,
           builder: (context, state) {
             return BlocProvider(
-              create: (_) => EarningsCubit(),
+              create: (_) => EarningsCubit(
+                authRepository: context.read(),
+                userRepository: context.read(),
+              ),
               child: const EarningsPage(),
             );
           },
