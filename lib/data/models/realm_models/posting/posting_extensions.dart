@@ -29,12 +29,12 @@ extension PostingFirestoreExtension on Posting {
 
 extension PostingRelationshipExtension on Posting {
   static List<RealmRelationship> get realmOutgoingRelationships => [
-        RealmRelationship<User>('hostId', 'host'),
+        RealmRelationship<User>('host_id', 'host'),
       ];
 
   static List<RealmRelationship> get realmIncomingRelationships => [
-        RealmRelationship<Booking>('postingId', 'posting'),
-        RealmRelationship<FavouritePosting>('postingId', 'posting'),
+        RealmRelationship<Booking>('posting_id', 'posting'),
+        RealmRelationship<FavouritePosting>('posting_id', 'posting'),
       ];
 }
 

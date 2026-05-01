@@ -18,8 +18,8 @@ extension BookingFirestoreExtension on Booking {
 
 extension BookingRelationshipExtension on Booking {
   static List<RealmRelationship> get realmOutgoingRelationships => [
-        RealmRelationship<Posting>('postingId', 'posting'),
-        RealmRelationship<User>('userId', 'user'),
+        RealmRelationship<Posting>('posting_id', 'posting'),
+        RealmRelationship<User>('user_id', 'user'),
       ];
 
   static List<RealmRelationship> get realmIncomingRelationships => const [];

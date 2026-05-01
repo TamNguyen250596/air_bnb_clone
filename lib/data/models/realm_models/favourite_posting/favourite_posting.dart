@@ -9,9 +9,12 @@ class _FavouritePosting {
   @PrimaryKey()
   late String id;
 
+  @MapTo('posting_id')
   String? postingId;
   $Posting? posting;
+  @MapTo('user_id')
   String? userId;
   $User? user;
+  @MapTo('created_at')
   DateTime? createdAt;
 }

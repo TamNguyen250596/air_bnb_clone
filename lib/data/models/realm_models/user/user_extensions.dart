@@ -33,11 +33,11 @@ extension UserRelationshipExtension on User {
   static List<RealmRelationship> get realmOutgoingRelationships => const [];
 
   static List<RealmRelationship> get realmIncomingRelationships => [
-        RealmRelationship<Posting>('hostId', 'host'),
-        RealmRelationship<Booking>('userId', 'user'),
-        RealmRelationship<FavouritePosting>('userId', 'user'),
-        RealmRelationship<Review>('userId', 'user'),
-        RealmRelationship<Message>('senderId', 'sender'),
+        RealmRelationship<Posting>('host_id', 'host'),
+        RealmRelationship<Booking>('user_id', 'user'),
+        RealmRelationship<FavouritePosting>('user_id', 'user'),
+        RealmRelationship<Review>('user_id', 'user'),
+        RealmRelationship<Message>('sender_id', 'sender'),
       ];
 }
 

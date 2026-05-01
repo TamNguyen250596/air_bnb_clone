@@ -10,7 +10,10 @@ class _Conversation {
   late Set<String> members;
   String? avatar;
   String? name;
+  @MapTo('last_message')
   String? lastMessage;
+  @MapTo('last_message_at')
   DateTime? lastMessageAt;
+  @MapTo('created_at')
   DateTime? createdAt;
 }

@@ -15,6 +15,7 @@ class $Posting {
   String? city;
   String? country;
   double? rating;
+  @MapTo('host_id')
   String? hostId;
   $User? host;
   double lat = 0.0;

@@ -9,7 +9,7 @@ class RealmRelationship<T extends RealmObject> {
   final String relationshipProperty;
 
   /// Resolves and returns the entity referenced by [sourceObject] via [relationKey].
-  /// [sourceObject] is the entity that holds the foreign key (e.g. Posting with hostId).
+  /// [sourceObject] is the entity that holds the foreign key (e.g. Posting `host_id`).
   T? getReferencedEntity(Realm realm, RealmObject sourceObject) {
     final id = sourceObject.dynamic.get(relationKey) as String?;
     if (id == null || id.isEmpty) return null;

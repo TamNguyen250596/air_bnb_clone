@@ -19,11 +19,11 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
     DateTime? createdAt,
   }) {
     RealmObjectBase.set(this, 'id', id);
-    RealmObjectBase.set(this, 'senderId', senderId);
+    RealmObjectBase.set(this, 'sender_id', senderId);
     RealmObjectBase.set(this, 'sender', sender);
-    RealmObjectBase.set(this, 'conversationId', conversationId);
+    RealmObjectBase.set(this, 'conversation_id', conversationId);
     RealmObjectBase.set(this, 'text', text);
-    RealmObjectBase.set(this, 'createdAt', createdAt);
+    RealmObjectBase.set(this, 'created_at', createdAt);
   }
 
   Message._();
@@ -35,9 +35,9 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   String? get senderId =>
-      RealmObjectBase.get<String>(this, 'senderId') as String?;
+      RealmObjectBase.get<String>(this, 'sender_id') as String?;
   @override
-  set senderId(String? value) => RealmObjectBase.set(this, 'senderId', value);
+  set senderId(String? value) => RealmObjectBase.set(this, 'sender_id', value);
 
   @override
   User? get sender => RealmObjectBase.get<User>(this, 'sender') as User?;
@@ -47,10 +47,10 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   String? get conversationId =>
-      RealmObjectBase.get<String>(this, 'conversationId') as String?;
+      RealmObjectBase.get<String>(this, 'conversation_id') as String?;
   @override
   set conversationId(String? value) =>
-      RealmObjectBase.set(this, 'conversationId', value);
+      RealmObjectBase.set(this, 'conversation_id', value);
 
   @override
   String? get text => RealmObjectBase.get<String>(this, 'text') as String?;
@@ -59,10 +59,10 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   DateTime? get createdAt =>
-      RealmObjectBase.get<DateTime>(this, 'createdAt') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'created_at') as DateTime?;
   @override
   set createdAt(DateTime? value) =>
-      RealmObjectBase.set(this, 'createdAt', value);
+      RealmObjectBase.set(this, 'created_at', value);
 
   @override
   Stream<RealmObjectChanges<Message>> get changes =>
@@ -78,11 +78,11 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
   EJsonValue toEJson() {
     return <String, dynamic>{
       'id': id.toEJson(),
-      'senderId': senderId.toEJson(),
+      'sender_id': senderId.toEJson(),
       'sender': sender.toEJson(),
-      'conversationId': conversationId.toEJson(),
+      'conversation_id': conversationId.toEJson(),
       'text': text.toEJson(),
-      'createdAt': createdAt.toEJson(),
+      'created_at': createdAt.toEJson(),
     };
   }
 
@@ -92,11 +92,11 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
     return switch (ejson) {
       {'id': EJsonValue id} => Message(
         fromEJson(id),
-        senderId: fromEJson(ejson['senderId']),
+        senderId: fromEJson(ejson['sender_id']),
         sender: fromEJson(ejson['sender']),
-        conversationId: fromEJson(ejson['conversationId']),
+        conversationId: fromEJson(ejson['conversation_id']),
         text: fromEJson(ejson['text']),
-        createdAt: fromEJson(ejson['createdAt']),
+        createdAt: fromEJson(ejson['created_at']),
       ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -107,7 +107,12 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
     register(_toEJson, _fromEJson);
     return const SchemaObject(ObjectType.realmObject, Message, 'Message', [
       SchemaProperty('id', RealmPropertyType.string, primaryKey: true),
-      SchemaProperty('senderId', RealmPropertyType.string, optional: true),
+      SchemaProperty(
+        'senderId',
+        RealmPropertyType.string,
+        mapTo: 'sender_id',
+        optional: true,
+      ),
       SchemaProperty(
         'sender',
         RealmPropertyType.object,
@@ -117,10 +122,16 @@ class Message extends $Message with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty(
         'conversationId',
         RealmPropertyType.string,
+        mapTo: 'conversation_id',
         optional: true,
       ),
       SchemaProperty('text', RealmPropertyType.string, optional: true),
-      SchemaProperty('createdAt', RealmPropertyType.timestamp, optional: true),
+      SchemaProperty(
+        'createdAt',
+        RealmPropertyType.timestamp,
+        mapTo: 'created_at',
+        optional: true,
+      ),
     ]);
   }();
 

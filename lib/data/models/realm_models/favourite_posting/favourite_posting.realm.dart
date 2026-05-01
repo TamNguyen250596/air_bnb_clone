@@ -20,11 +20,11 @@ class FavouritePosting extends _FavouritePosting
     DateTime? createdAt,
   }) {
     RealmObjectBase.set(this, 'id', id);
-    RealmObjectBase.set(this, 'postingId', postingId);
+    RealmObjectBase.set(this, 'posting_id', postingId);
     RealmObjectBase.set(this, 'posting', posting);
-    RealmObjectBase.set(this, 'userId', userId);
+    RealmObjectBase.set(this, 'user_id', userId);
     RealmObjectBase.set(this, 'user', user);
-    RealmObjectBase.set(this, 'createdAt', createdAt);
+    RealmObjectBase.set(this, 'created_at', createdAt);
   }
 
   FavouritePosting._();
@@ -36,9 +36,10 @@ class FavouritePosting extends _FavouritePosting
 
   @override
   String? get postingId =>
-      RealmObjectBase.get<String>(this, 'postingId') as String?;
+      RealmObjectBase.get<String>(this, 'posting_id') as String?;
   @override
-  set postingId(String? value) => RealmObjectBase.set(this, 'postingId', value);
+  set postingId(String? value) =>
+      RealmObjectBase.set(this, 'posting_id', value);
 
   @override
   Posting? get posting =>
@@ -48,9 +49,9 @@ class FavouritePosting extends _FavouritePosting
       RealmObjectBase.set(this, 'posting', value);
 
   @override
-  String? get userId => RealmObjectBase.get<String>(this, 'userId') as String?;
+  String? get userId => RealmObjectBase.get<String>(this, 'user_id') as String?;
   @override
-  set userId(String? value) => RealmObjectBase.set(this, 'userId', value);
+  set userId(String? value) => RealmObjectBase.set(this, 'user_id', value);
 
   @override
   User? get user => RealmObjectBase.get<User>(this, 'user') as User?;
@@ -59,10 +60,10 @@ class FavouritePosting extends _FavouritePosting
 
   @override
   DateTime? get createdAt =>
-      RealmObjectBase.get<DateTime>(this, 'createdAt') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'created_at') as DateTime?;
   @override
   set createdAt(DateTime? value) =>
-      RealmObjectBase.set(this, 'createdAt', value);
+      RealmObjectBase.set(this, 'created_at', value);
 
   @override
   Stream<RealmObjectChanges<FavouritePosting>> get changes =>
@@ -80,11 +81,11 @@ class FavouritePosting extends _FavouritePosting
   EJsonValue toEJson() {
     return <String, dynamic>{
       'id': id.toEJson(),
-      'postingId': postingId.toEJson(),
+      'posting_id': postingId.toEJson(),
       'posting': posting.toEJson(),
-      'userId': userId.toEJson(),
+      'user_id': userId.toEJson(),
       'user': user.toEJson(),
-      'createdAt': createdAt.toEJson(),
+      'created_at': createdAt.toEJson(),
     };
   }
 
@@ -94,11 +95,11 @@ class FavouritePosting extends _FavouritePosting
     return switch (ejson) {
       {'id': EJsonValue id} => FavouritePosting(
         fromEJson(id),
-        postingId: fromEJson(ejson['postingId']),
+        postingId: fromEJson(ejson['posting_id']),
         posting: fromEJson(ejson['posting']),
-        userId: fromEJson(ejson['userId']),
+        userId: fromEJson(ejson['user_id']),
         user: fromEJson(ejson['user']),
-        createdAt: fromEJson(ejson['createdAt']),
+        createdAt: fromEJson(ejson['created_at']),
       ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -113,14 +114,24 @@ class FavouritePosting extends _FavouritePosting
       'FavouritePosting',
       [
         SchemaProperty('id', RealmPropertyType.string, primaryKey: true),
-        SchemaProperty('postingId', RealmPropertyType.string, optional: true),
+        SchemaProperty(
+          'postingId',
+          RealmPropertyType.string,
+          mapTo: 'posting_id',
+          optional: true,
+        ),
         SchemaProperty(
           'posting',
           RealmPropertyType.object,
           optional: true,
           linkTarget: 'Posting',
         ),
-        SchemaProperty('userId', RealmPropertyType.string, optional: true),
+        SchemaProperty(
+          'userId',
+          RealmPropertyType.string,
+          mapTo: 'user_id',
+          optional: true,
+        ),
         SchemaProperty(
           'user',
           RealmPropertyType.object,
@@ -130,6 +141,7 @@ class FavouritePosting extends _FavouritePosting
         SchemaProperty(
           'createdAt',
           RealmPropertyType.timestamp,
+          mapTo: 'created_at',
           optional: true,
         ),
       ],

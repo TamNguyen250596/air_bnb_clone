@@ -46,7 +46,7 @@ class Posting extends $Posting with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'city', city);
     RealmObjectBase.set(this, 'country', country);
     RealmObjectBase.set(this, 'rating', rating);
-    RealmObjectBase.set(this, 'hostId', hostId);
+    RealmObjectBase.set(this, 'host_id', hostId);
     RealmObjectBase.set(this, 'host', host);
     RealmObjectBase.set(this, 'lat', lat);
     RealmObjectBase.set(this, 'lon', lon);
@@ -120,9 +120,9 @@ class Posting extends $Posting with RealmEntity, RealmObjectBase, RealmObject {
   set rating(double? value) => RealmObjectBase.set(this, 'rating', value);
 
   @override
-  String? get hostId => RealmObjectBase.get<String>(this, 'hostId') as String?;
+  String? get hostId => RealmObjectBase.get<String>(this, 'host_id') as String?;
   @override
-  set hostId(String? value) => RealmObjectBase.set(this, 'hostId', value);
+  set hostId(String? value) => RealmObjectBase.set(this, 'host_id', value);
 
   @override
   User? get host => RealmObjectBase.get<User>(this, 'host') as User?;
@@ -188,7 +188,7 @@ class Posting extends $Posting with RealmEntity, RealmObjectBase, RealmObject {
       'city': city.toEJson(),
       'country': country.toEJson(),
       'rating': rating.toEJson(),
-      'hostId': hostId.toEJson(),
+      'host_id': hostId.toEJson(),
       'host': host.toEJson(),
       'lat': lat.toEJson(),
       'lon': lon.toEJson(),
@@ -213,7 +213,7 @@ class Posting extends $Posting with RealmEntity, RealmObjectBase, RealmObject {
         city: fromEJson(ejson['city']),
         country: fromEJson(ejson['country']),
         rating: fromEJson(ejson['rating']),
-        hostId: fromEJson(ejson['hostId']),
+        hostId: fromEJson(ejson['host_id']),
         host: fromEJson(ejson['host']),
         lat: fromEJson(ejson['lat'], defaultValue: 0.0),
         lon: fromEJson(ejson['lon'], defaultValue: 0.0),
@@ -239,7 +239,12 @@ class Posting extends $Posting with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('city', RealmPropertyType.string, optional: true),
       SchemaProperty('country', RealmPropertyType.string, optional: true),
       SchemaProperty('rating', RealmPropertyType.double, optional: true),
-      SchemaProperty('hostId', RealmPropertyType.string, optional: true),
+      SchemaProperty(
+        'hostId',
+        RealmPropertyType.string,
+        mapTo: 'host_id',
+        optional: true,
+      ),
       SchemaProperty(
         'host',
         RealmPropertyType.object,

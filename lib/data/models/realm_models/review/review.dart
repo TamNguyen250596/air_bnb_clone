@@ -10,9 +10,13 @@ class _Review {
 
   double rating = 0.0;
   String? comment;
+  @MapTo('user_id')
   String? userId;
   $User? user;
+  @MapTo('target_type')
   String? targetType;
+  @MapTo('target_id')
   String? targetId;
+  @MapTo('created_at')
   DateTime? createdAt;
 }

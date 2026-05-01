@@ -78,7 +78,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ShellRoute(
       builder: (context, state, child) {
         return BlocProvider(
-          create: (_) => CurrentUserCubit(),
+          create: (_) => CurrentUserCubit(
+            pushNotificationRepository: context.read(),
+            notificationRepository: context.read(),
+          ),
           child: GuestHomeScreen(child: child),
         );
       },
@@ -245,7 +248,10 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
     ShellRoute(
       builder: (context, state, child) {
         return BlocProvider(
-          create: (_) => CurrentUserCubit(),
+          create: (_) => CurrentUserCubit(
+            pushNotificationRepository: context.read(),
+            notificationRepository: context.read(),
+          ),
           child: HostHomeScreen(child: child),
         );
       },

@@ -21,13 +21,13 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
     double? paymentAmount,
   }) {
     RealmObjectBase.set(this, 'id', id);
-    RealmObjectBase.set(this, 'postingId', postingId);
+    RealmObjectBase.set(this, 'posting_id', postingId);
     RealmObjectBase.set(this, 'posting', posting);
-    RealmObjectBase.set(this, 'userId', userId);
+    RealmObjectBase.set(this, 'user_id', userId);
     RealmObjectBase.set(this, 'user', user);
-    RealmObjectBase.set(this, 'checkIn', checkIn);
-    RealmObjectBase.set(this, 'checkOut', checkOut);
-    RealmObjectBase.set(this, 'paymentAmount', paymentAmount);
+    RealmObjectBase.set(this, 'check_in', checkIn);
+    RealmObjectBase.set(this, 'check_out', checkOut);
+    RealmObjectBase.set(this, 'payment_amount', paymentAmount);
   }
 
   Booking._();
@@ -39,9 +39,10 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   String? get postingId =>
-      RealmObjectBase.get<String>(this, 'postingId') as String?;
+      RealmObjectBase.get<String>(this, 'posting_id') as String?;
   @override
-  set postingId(String? value) => RealmObjectBase.set(this, 'postingId', value);
+  set postingId(String? value) =>
+      RealmObjectBase.set(this, 'posting_id', value);
 
   @override
   Posting? get posting =>
@@ -51,9 +52,9 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
       RealmObjectBase.set(this, 'posting', value);
 
   @override
-  String? get userId => RealmObjectBase.get<String>(this, 'userId') as String?;
+  String? get userId => RealmObjectBase.get<String>(this, 'user_id') as String?;
   @override
-  set userId(String? value) => RealmObjectBase.set(this, 'userId', value);
+  set userId(String? value) => RealmObjectBase.set(this, 'user_id', value);
 
   @override
   User? get user => RealmObjectBase.get<User>(this, 'user') as User?;
@@ -62,22 +63,23 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   DateTime? get checkIn =>
-      RealmObjectBase.get<DateTime>(this, 'checkIn') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'check_in') as DateTime?;
   @override
-  set checkIn(DateTime? value) => RealmObjectBase.set(this, 'checkIn', value);
+  set checkIn(DateTime? value) => RealmObjectBase.set(this, 'check_in', value);
 
   @override
   DateTime? get checkOut =>
-      RealmObjectBase.get<DateTime>(this, 'checkOut') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'check_out') as DateTime?;
   @override
-  set checkOut(DateTime? value) => RealmObjectBase.set(this, 'checkOut', value);
+  set checkOut(DateTime? value) =>
+      RealmObjectBase.set(this, 'check_out', value);
 
   @override
   double? get paymentAmount =>
-      RealmObjectBase.get<double>(this, 'paymentAmount') as double?;
+      RealmObjectBase.get<double>(this, 'payment_amount') as double?;
   @override
   set paymentAmount(double? value) =>
-      RealmObjectBase.set(this, 'paymentAmount', value);
+      RealmObjectBase.set(this, 'payment_amount', value);
 
   @override
   Stream<RealmObjectChanges<Booking>> get changes =>
@@ -93,13 +95,13 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
   EJsonValue toEJson() {
     return <String, dynamic>{
       'id': id.toEJson(),
-      'postingId': postingId.toEJson(),
+      'posting_id': postingId.toEJson(),
       'posting': posting.toEJson(),
-      'userId': userId.toEJson(),
+      'user_id': userId.toEJson(),
       'user': user.toEJson(),
-      'checkIn': checkIn.toEJson(),
-      'checkOut': checkOut.toEJson(),
-      'paymentAmount': paymentAmount.toEJson(),
+      'check_in': checkIn.toEJson(),
+      'check_out': checkOut.toEJson(),
+      'payment_amount': paymentAmount.toEJson(),
     };
   }
 
@@ -109,13 +111,13 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
     return switch (ejson) {
       {'id': EJsonValue id} => Booking(
         fromEJson(id),
-        postingId: fromEJson(ejson['postingId']),
+        postingId: fromEJson(ejson['posting_id']),
         posting: fromEJson(ejson['posting']),
-        userId: fromEJson(ejson['userId']),
+        userId: fromEJson(ejson['user_id']),
         user: fromEJson(ejson['user']),
-        checkIn: fromEJson(ejson['checkIn']),
-        checkOut: fromEJson(ejson['checkOut']),
-        paymentAmount: fromEJson(ejson['paymentAmount']),
+        checkIn: fromEJson(ejson['check_in']),
+        checkOut: fromEJson(ejson['check_out']),
+        paymentAmount: fromEJson(ejson['payment_amount']),
       ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -126,23 +128,48 @@ class Booking extends _Booking with RealmEntity, RealmObjectBase, RealmObject {
     register(_toEJson, _fromEJson);
     return const SchemaObject(ObjectType.realmObject, Booking, 'Booking', [
       SchemaProperty('id', RealmPropertyType.string, primaryKey: true),
-      SchemaProperty('postingId', RealmPropertyType.string, optional: true),
+      SchemaProperty(
+        'postingId',
+        RealmPropertyType.string,
+        mapTo: 'posting_id',
+        optional: true,
+      ),
       SchemaProperty(
         'posting',
         RealmPropertyType.object,
         optional: true,
         linkTarget: 'Posting',
       ),
-      SchemaProperty('userId', RealmPropertyType.string, optional: true),
+      SchemaProperty(
+        'userId',
+        RealmPropertyType.string,
+        mapTo: 'user_id',
+        optional: true,
+      ),
       SchemaProperty(
         'user',
         RealmPropertyType.object,
         optional: true,
         linkTarget: 'User',
       ),
-      SchemaProperty('checkIn', RealmPropertyType.timestamp, optional: true),
-      SchemaProperty('checkOut', RealmPropertyType.timestamp, optional: true),
-      SchemaProperty('paymentAmount', RealmPropertyType.double, optional: true),
+      SchemaProperty(
+        'checkIn',
+        RealmPropertyType.timestamp,
+        mapTo: 'check_in',
+        optional: true,
+      ),
+      SchemaProperty(
+        'checkOut',
+        RealmPropertyType.timestamp,
+        mapTo: 'check_out',
+        optional: true,
+      ),
+      SchemaProperty(
+        'paymentAmount',
+        RealmPropertyType.double,
+        mapTo: 'payment_amount',
+        optional: true,
+      ),
     ]);
   }();
 

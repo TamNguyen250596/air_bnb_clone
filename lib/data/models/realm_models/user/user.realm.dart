@@ -28,7 +28,7 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
   }) {
     if (!_defaultsSet) {
       _defaultsSet = RealmObjectBase.setDefaults<User>({
-        'isCurrentlyHosting': false,
+        'is_currently_hosting': false,
       });
     }
     RealmObjectBase.set(this, 'id', id);
@@ -36,12 +36,12 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'bio', bio);
     RealmObjectBase.set(this, 'city', city);
     RealmObjectBase.set(this, 'country', country);
-    RealmObjectBase.set(this, 'firstName', firstName);
-    RealmObjectBase.set(this, 'lastName', lastName);
-    RealmObjectBase.set(this, 'fullName', fullName);
-    RealmObjectBase.set(this, 'imageUrl', imageUrl);
-    RealmObjectBase.set(this, 'isHost', isHost);
-    RealmObjectBase.set(this, 'isCurrentlyHosting', isCurrentlyHosting);
+    RealmObjectBase.set(this, 'first_name', firstName);
+    RealmObjectBase.set(this, 'last_name', lastName);
+    RealmObjectBase.set(this, 'full_name', fullName);
+    RealmObjectBase.set(this, 'image_url', imageUrl);
+    RealmObjectBase.set(this, 'is_host', isHost);
+    RealmObjectBase.set(this, 'is_currently_hosting', isCurrentlyHosting);
     RealmObjectBase.set(this, 'earning', earning);
   }
 
@@ -75,39 +75,40 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   String? get firstName =>
-      RealmObjectBase.get<String>(this, 'firstName') as String?;
+      RealmObjectBase.get<String>(this, 'first_name') as String?;
   @override
-  set firstName(String? value) => RealmObjectBase.set(this, 'firstName', value);
+  set firstName(String? value) =>
+      RealmObjectBase.set(this, 'first_name', value);
 
   @override
   String? get lastName =>
-      RealmObjectBase.get<String>(this, 'lastName') as String?;
+      RealmObjectBase.get<String>(this, 'last_name') as String?;
   @override
-  set lastName(String? value) => RealmObjectBase.set(this, 'lastName', value);
+  set lastName(String? value) => RealmObjectBase.set(this, 'last_name', value);
 
   @override
   String? get fullName =>
-      RealmObjectBase.get<String>(this, 'fullName') as String?;
+      RealmObjectBase.get<String>(this, 'full_name') as String?;
   @override
-  set fullName(String? value) => RealmObjectBase.set(this, 'fullName', value);
+  set fullName(String? value) => RealmObjectBase.set(this, 'full_name', value);
 
   @override
   String? get imageUrl =>
-      RealmObjectBase.get<String>(this, 'imageUrl') as String?;
+      RealmObjectBase.get<String>(this, 'image_url') as String?;
   @override
-  set imageUrl(String? value) => RealmObjectBase.set(this, 'imageUrl', value);
+  set imageUrl(String? value) => RealmObjectBase.set(this, 'image_url', value);
 
   @override
-  bool? get isHost => RealmObjectBase.get<bool>(this, 'isHost') as bool?;
+  bool? get isHost => RealmObjectBase.get<bool>(this, 'is_host') as bool?;
   @override
-  set isHost(bool? value) => RealmObjectBase.set(this, 'isHost', value);
+  set isHost(bool? value) => RealmObjectBase.set(this, 'is_host', value);
 
   @override
   bool get isCurrentlyHosting =>
-      RealmObjectBase.get<bool>(this, 'isCurrentlyHosting') as bool;
+      RealmObjectBase.get<bool>(this, 'is_currently_hosting') as bool;
   @override
   set isCurrentlyHosting(bool value) =>
-      RealmObjectBase.set(this, 'isCurrentlyHosting', value);
+      RealmObjectBase.set(this, 'is_currently_hosting', value);
 
   @override
   double? get earning =>
@@ -133,12 +134,12 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
       'bio': bio.toEJson(),
       'city': city.toEJson(),
       'country': country.toEJson(),
-      'firstName': firstName.toEJson(),
-      'lastName': lastName.toEJson(),
-      'fullName': fullName.toEJson(),
-      'imageUrl': imageUrl.toEJson(),
-      'isHost': isHost.toEJson(),
-      'isCurrentlyHosting': isCurrentlyHosting.toEJson(),
+      'first_name': firstName.toEJson(),
+      'last_name': lastName.toEJson(),
+      'full_name': fullName.toEJson(),
+      'image_url': imageUrl.toEJson(),
+      'is_host': isHost.toEJson(),
+      'is_currently_hosting': isCurrentlyHosting.toEJson(),
       'earning': earning.toEJson(),
     };
   }
@@ -153,13 +154,13 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
         bio: fromEJson(ejson['bio']),
         city: fromEJson(ejson['city']),
         country: fromEJson(ejson['country']),
-        firstName: fromEJson(ejson['firstName']),
-        lastName: fromEJson(ejson['lastName']),
-        fullName: fromEJson(ejson['fullName']),
-        imageUrl: fromEJson(ejson['imageUrl']),
-        isHost: fromEJson(ejson['isHost']),
+        firstName: fromEJson(ejson['first_name']),
+        lastName: fromEJson(ejson['last_name']),
+        fullName: fromEJson(ejson['full_name']),
+        imageUrl: fromEJson(ejson['image_url']),
+        isHost: fromEJson(ejson['is_host']),
         isCurrentlyHosting: fromEJson(
-          ejson['isCurrentlyHosting'],
+          ejson['is_currently_hosting'],
           defaultValue: false,
         ),
         earning: fromEJson(ejson['earning']),
@@ -177,12 +178,41 @@ class User extends $User with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('bio', RealmPropertyType.string, optional: true),
       SchemaProperty('city', RealmPropertyType.string, optional: true),
       SchemaProperty('country', RealmPropertyType.string, optional: true),
-      SchemaProperty('firstName', RealmPropertyType.string, optional: true),
-      SchemaProperty('lastName', RealmPropertyType.string, optional: true),
-      SchemaProperty('fullName', RealmPropertyType.string, optional: true),
-      SchemaProperty('imageUrl', RealmPropertyType.string, optional: true),
-      SchemaProperty('isHost', RealmPropertyType.bool, optional: true),
-      SchemaProperty('isCurrentlyHosting', RealmPropertyType.bool),
+      SchemaProperty(
+        'firstName',
+        RealmPropertyType.string,
+        mapTo: 'first_name',
+        optional: true,
+      ),
+      SchemaProperty(
+        'lastName',
+        RealmPropertyType.string,
+        mapTo: 'last_name',
+        optional: true,
+      ),
+      SchemaProperty(
+        'fullName',
+        RealmPropertyType.string,
+        mapTo: 'full_name',
+        optional: true,
+      ),
+      SchemaProperty(
+        'imageUrl',
+        RealmPropertyType.string,
+        mapTo: 'image_url',
+        optional: true,
+      ),
+      SchemaProperty(
+        'isHost',
+        RealmPropertyType.bool,
+        mapTo: 'is_host',
+        optional: true,
+      ),
+      SchemaProperty(
+        'isCurrentlyHosting',
+        RealmPropertyType.bool,
+        mapTo: 'is_currently_hosting',
+      ),
       SchemaProperty('earning', RealmPropertyType.double, optional: true),
     ]);
   }();

@@ -8,6 +8,7 @@ import '../../models/realm_models/booking/booking.dart';
 import '../../models/realm_models/conversation/conversation.dart';
 import '../../models/realm_models/favourite_posting/favourite_posting.dart';
 import '../../models/realm_models/message/message.dart';
+import '../../models/realm_models/notification/notification.dart';
 import '../../models/realm_models/review/review.dart';
 import '../../models/realm_models/user/user.dart';
 
@@ -21,8 +22,9 @@ class RealmService {
       Message.schema,
       Review.schema,
       Conversation.schema,
+      Notification.schema,
     ],
-    schemaVersion: 4,
+    schemaVersion: 7,
     shouldDeleteIfMigrationNeeded: true,
   );
 
@@ -53,7 +55,6 @@ class RealmService {
 
       T? object = realm.find<T>(entityId);
       final isNew = object == null;
-      print("THIS IS: $T, isNew: $isNew");
       T entity = realm.add(realmObject, update: update);
 
       if (isNew) {
@@ -102,6 +103,28 @@ class RealmService {
     return objects.changes;
   }
 
+  // ========== Update ==========
+  Future<T?> updateEntity<T extends RealmObject>(String primaryKey, Map<String, dynamic> data) async {
+    final realm = _getRealm();
+    return realm.write<T?>(() {
+      final object = realm.find<T>(primaryKey);
+      if (object == null) return null;
+
+      for (final MapEntry<String, dynamic> entry in data.entries) {
+        final prop = _schemaPropertyForKey(object.objectSchema, entry.key);
+        if (prop == null) {
+          developer.log('updateEntity: unknown property "${entry.key}" on $T', name: 'RealmService');
+          continue;
+        }
+        if (prop.primaryKey) continue;
+
+        final coerced = _coerceValueForRealmProperty(entry.value, prop.propertyType, prop.optional);
+        object.dynamic.set(prop.mapTo, coerced);
+      }
+      return object;
+    });
+  }
+
   // ========== Delete ==========
   void deleteEntity<T extends RealmObject>(String id) {
     final realm = _getRealm();
@@ -136,6 +159,58 @@ class RealmService {
       });
     } catch (e, st) {
       developer.log('Realm wipe failed', error: e, stackTrace: st);
+    }
+  }
+
+  static SchemaProperty? _schemaPropertyForKey(SchemaObject schema, String key) {
+    for (final p in schema) {
+      if (p.name == key || p.mapTo == key) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  /// Coerces [value] (e.g. from Firestore JSON) to a type compatible with [propertyType].
+  static Object? _coerceValueForRealmProperty(
+    dynamic value,
+    RealmPropertyType type,
+    bool optional,
+  ) {
+    if (value == null) {
+      return null;
+    }
+    switch (type) {
+      case RealmPropertyType.string:
+        return value is String ? value : value.toString();
+      case RealmPropertyType.bool:
+        if (value is bool) return value;
+        if (value is int) return value != 0;
+        if (value is String) {
+          final v = value.toLowerCase();
+          if (v == 'true' || v == '1') return true;
+          if (v == 'false' || v == '0') return false;
+        }
+        return null;
+      case RealmPropertyType.int:
+        if (value is int) return value;
+        if (value is num) return value.toInt();
+        return int.tryParse(value.toString());
+      case RealmPropertyType.double:
+      case RealmPropertyType.float:
+        if (value is double) return value;
+        if (value is num) return value.toDouble();
+        return double.tryParse(value.toString());
+      case RealmPropertyType.timestamp:
+        if (value is DateTime) return value;
+        if (value is int) return DateTime.fromMillisecondsSinceEpoch(value);
+        if (value is String) return DateTime.tryParse(value);
+        return null;
+      case RealmPropertyType.object:
+      case RealmPropertyType.mixed:
+        return value;
+      default:
+        return value;
     }
   }
 }

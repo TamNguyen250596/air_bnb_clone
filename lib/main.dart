@@ -2,10 +2,12 @@ import 'package:air_bnb_clone/config/dependencies.dart';
 import 'package:air_bnb_clone/routing/router.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 import 'commons/constants/app_constants.dart';
+import 'data/services/fcm_background_handler.dart';
 import 'firebase_options.dart';
 
 // ========== Entry Point ==========
@@ -19,6 +21,8 @@ void main() async {
   await Firebase.initializeApp(
   options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
   // Stripe
   Stripe.publishableKey = dotenv.env[AppConstants.stripePublicKey]!;

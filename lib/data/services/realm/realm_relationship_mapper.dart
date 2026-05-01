@@ -4,6 +4,8 @@ import '../../models/realm_models/favourite_posting/favourite_posting.dart';
 import '../../models/realm_models/favourite_posting/favourite_posting_extensions.dart';
 import '../../models/realm_models/message/message.dart';
 import '../../models/realm_models/message/message_extensions.dart';
+import '../../models/realm_models/notification/notification.dart';
+import '../../models/realm_models/notification/notification_extensions.dart';
 import '../../models/realm_models/posting/posting.dart';
 import '../../models/realm_models/posting/posting_extensions.dart';
 import '../../models/realm_models/review/review.dart';
@@ -56,7 +58,7 @@ export 'realm_relationship.dart';
 /// }
 /// ```
 /// So [PostingRelationshipExtension.realmOutgoingRelationships] includes
-/// `RealmRelationship<User>("hostId", "host")`.
+/// `RealmRelationship<User>("host_id", "host")` (persisted / [@MapTo] name).
 ///
 /// **Booking** – references one Posting and one User.
 /// ```dart
@@ -71,8 +73,8 @@ export 'realm_relationship.dart';
 /// }
 /// ```
 /// So [BookingRelationshipExtension.realmOutgoingRelationships] includes both
-/// `RealmRelationship<Posting>("postingId", "posting")` and
-/// `RealmRelationship<User>("userId", "user")`.
+/// `RealmRelationship<Posting>("posting_id", "posting")` and
+/// `RealmRelationship<User>("user_id", "user")`.
 ///
 /// ## How to use outgoing vs incoming
 ///
@@ -101,8 +103,8 @@ export 'realm_relationship.dart';
 /// Bookings with `userId == "u2"`, Messages with `senderId == "u2"`. For each, it sets
 /// `host`, `user`, or `sender` to this new User.
 ///
-/// Property names in [RealmRelationship] must match the Realm model field names
-/// exactly (e.g. `postingId` and `posting` on [Booking]).
+/// [RealmRelationship] `relationKey` must match the **persisted** Realm property
+/// name (the [@MapTo] target when present, e.g. `posting_id` / `user_id` on [Booking]).
 
 /// Holds [RealmRelationship] lists for both directions for one model [Type].
 class RealmRelationshipHelper {
@@ -146,6 +148,12 @@ class RealmRelationshipRegistry {
     Message: RealmRelationshipHelper(
       outgoing: MessageRelationshipExtension.realmOutgoingRelationships,
       incoming: MessageRelationshipExtension.realmIncomingRelationships,
+    ),
+    Notification: RealmRelationshipHelper(
+      outgoing:
+          NotificationRelationshipExtension.realmOutgoingRelationships,
+      incoming:
+          NotificationRelationshipExtension.realmIncomingRelationships,
     ),
   };
 

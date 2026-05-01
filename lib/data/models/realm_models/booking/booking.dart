@@ -9,11 +9,16 @@ class _Booking {
   @PrimaryKey()
   late String id;
 
+  @MapTo('posting_id')
   String? postingId;
   $Posting? posting;
+  @MapTo('user_id')
   String? userId;
   $User? user;
+  @MapTo('check_in')
   DateTime? checkIn;
+  @MapTo('check_out')
   DateTime? checkOut;
+  @MapTo('payment_amount')
   double? paymentAmount;
 }

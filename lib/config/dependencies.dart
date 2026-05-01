@@ -1,7 +1,9 @@
 import 'package:air_bnb_clone/data/repositories/auth_repository.dart';
 import 'package:air_bnb_clone/data/repositories/place_repository.dart';
+import 'package:air_bnb_clone/data/repositories/remote_notification_repository.dart';
 import 'package:air_bnb_clone/data/services/auth_service.dart';
 import 'package:air_bnb_clone/data/services/firestore/firestore_service.dart';
+import 'package:air_bnb_clone/data/services/remote_notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import '../data/repositories/booking_repository.dart';
@@ -9,6 +11,7 @@ import '../data/repositories/favourite_posting_repository.dart';
 import '../data/repositories/conversation_repository.dart';
 import '../data/repositories/media_repository.dart';
 import '../data/repositories/message_repository.dart';
+import '../data/repositories/notification_repository.dart';
 import '../data/repositories/posting_repository.dart';
 import '../data/repositories/review_repository.dart';
 import '../data/repositories/user_repository.dart';
@@ -76,6 +79,12 @@ List<SingleChildWidget> get providers {
     Provider<MessageRepository>(
       create: (context) =>
       MessageRepositoryImpl(
+          firestoreService: context.read(),
+          realmManager: context.read(),
+      ),
+    ),
+    Provider<NotificationRepository>(
+      create: (context) => NotificationRepositoryImpl(
         firestoreService: context.read(),
         realmManager: context.read(),
       ),
@@ -84,6 +93,13 @@ List<SingleChildWidget> get providers {
     Provider<StripePaymentIntentRepository>(
       create: (context) => StripePaymentIntentRepositoryImpl(
         stripeService: context.read(),
+      ),
+    ),
+    Provider(create: (context) => RemoteNotificationService()),
+    Provider<RemoteNotificationPermissionRepository>(
+      create: (context) => RemoteNotificationRepositoryImpl(
+        context.read(),
+        context.read(),
       ),
     ),
     ChangeNotifierProvider<AuthRepository>(

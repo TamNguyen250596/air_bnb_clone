@@ -8,9 +8,12 @@ class $Message {
   @PrimaryKey()
   late String id;
 
+  @MapTo('sender_id')
   String? senderId;
   $User? sender;
+  @MapTo('conversation_id')
   String? conversationId;
   String? text;
+  @MapTo('created_at')
   DateTime? createdAt;
 }

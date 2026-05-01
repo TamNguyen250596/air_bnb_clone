@@ -19,7 +19,7 @@ extension ReviewFirestoreExtension on Review {
 
 extension ReviewRelationshipExtension on Review {
   static List<RealmRelationship> get realmOutgoingRelationships => [
-        RealmRelationship<User>('userId', 'user'),
+        RealmRelationship<User>('user_id', 'user'),
       ];
 
   static List<RealmRelationship> get realmIncomingRelationships => const [];

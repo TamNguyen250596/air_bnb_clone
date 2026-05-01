@@ -28,11 +28,11 @@ class Review extends _Review with RealmEntity, RealmObjectBase, RealmObject {
     RealmObjectBase.set(this, 'id', id);
     RealmObjectBase.set(this, 'rating', rating);
     RealmObjectBase.set(this, 'comment', comment);
-    RealmObjectBase.set(this, 'userId', userId);
+    RealmObjectBase.set(this, 'user_id', userId);
     RealmObjectBase.set(this, 'user', user);
-    RealmObjectBase.set(this, 'targetType', targetType);
-    RealmObjectBase.set(this, 'targetId', targetId);
-    RealmObjectBase.set(this, 'createdAt', createdAt);
+    RealmObjectBase.set(this, 'target_type', targetType);
+    RealmObjectBase.set(this, 'target_id', targetId);
+    RealmObjectBase.set(this, 'created_at', createdAt);
   }
 
   Review._();
@@ -54,9 +54,9 @@ class Review extends _Review with RealmEntity, RealmObjectBase, RealmObject {
   set comment(String? value) => RealmObjectBase.set(this, 'comment', value);
 
   @override
-  String? get userId => RealmObjectBase.get<String>(this, 'userId') as String?;
+  String? get userId => RealmObjectBase.get<String>(this, 'user_id') as String?;
   @override
-  set userId(String? value) => RealmObjectBase.set(this, 'userId', value);
+  set userId(String? value) => RealmObjectBase.set(this, 'user_id', value);
 
   @override
   User? get user => RealmObjectBase.get<User>(this, 'user') as User?;
@@ -65,23 +65,23 @@ class Review extends _Review with RealmEntity, RealmObjectBase, RealmObject {
 
   @override
   String? get targetType =>
-      RealmObjectBase.get<String>(this, 'targetType') as String?;
+      RealmObjectBase.get<String>(this, 'target_type') as String?;
   @override
   set targetType(String? value) =>
-      RealmObjectBase.set(this, 'targetType', value);
+      RealmObjectBase.set(this, 'target_type', value);
 
   @override
   String? get targetId =>
-      RealmObjectBase.get<String>(this, 'targetId') as String?;
+      RealmObjectBase.get<String>(this, 'target_id') as String?;
   @override
-  set targetId(String? value) => RealmObjectBase.set(this, 'targetId', value);
+  set targetId(String? value) => RealmObjectBase.set(this, 'target_id', value);
 
   @override
   DateTime? get createdAt =>
-      RealmObjectBase.get<DateTime>(this, 'createdAt') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'created_at') as DateTime?;
   @override
   set createdAt(DateTime? value) =>
-      RealmObjectBase.set(this, 'createdAt', value);
+      RealmObjectBase.set(this, 'created_at', value);
 
   @override
   Stream<RealmObjectChanges<Review>> get changes =>
@@ -99,11 +99,11 @@ class Review extends _Review with RealmEntity, RealmObjectBase, RealmObject {
       'id': id.toEJson(),
       'rating': rating.toEJson(),
       'comment': comment.toEJson(),
-      'userId': userId.toEJson(),
+      'user_id': userId.toEJson(),
       'user': user.toEJson(),
-      'targetType': targetType.toEJson(),
-      'targetId': targetId.toEJson(),
-      'createdAt': createdAt.toEJson(),
+      'target_type': targetType.toEJson(),
+      'target_id': targetId.toEJson(),
+      'created_at': createdAt.toEJson(),
     };
   }
 
@@ -115,11 +115,11 @@ class Review extends _Review with RealmEntity, RealmObjectBase, RealmObject {
         fromEJson(id),
         rating: fromEJson(ejson['rating'], defaultValue: 0.0),
         comment: fromEJson(ejson['comment']),
-        userId: fromEJson(ejson['userId']),
+        userId: fromEJson(ejson['user_id']),
         user: fromEJson(ejson['user']),
-        targetType: fromEJson(ejson['targetType']),
-        targetId: fromEJson(ejson['targetId']),
-        createdAt: fromEJson(ejson['createdAt']),
+        targetType: fromEJson(ejson['target_type']),
+        targetId: fromEJson(ejson['target_id']),
+        createdAt: fromEJson(ejson['created_at']),
       ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -132,16 +132,36 @@ class Review extends _Review with RealmEntity, RealmObjectBase, RealmObject {
       SchemaProperty('id', RealmPropertyType.string, primaryKey: true),
       SchemaProperty('rating', RealmPropertyType.double),
       SchemaProperty('comment', RealmPropertyType.string, optional: true),
-      SchemaProperty('userId', RealmPropertyType.string, optional: true),
+      SchemaProperty(
+        'userId',
+        RealmPropertyType.string,
+        mapTo: 'user_id',
+        optional: true,
+      ),
       SchemaProperty(
         'user',
         RealmPropertyType.object,
         optional: true,
         linkTarget: 'User',
       ),
-      SchemaProperty('targetType', RealmPropertyType.string, optional: true),
-      SchemaProperty('targetId', RealmPropertyType.string, optional: true),
-      SchemaProperty('createdAt', RealmPropertyType.timestamp, optional: true),
+      SchemaProperty(
+        'targetType',
+        RealmPropertyType.string,
+        mapTo: 'target_type',
+        optional: true,
+      ),
+      SchemaProperty(
+        'targetId',
+        RealmPropertyType.string,
+        mapTo: 'target_id',
+        optional: true,
+      ),
+      SchemaProperty(
+        'createdAt',
+        RealmPropertyType.timestamp,
+        mapTo: 'created_at',
+        optional: true,
+      ),
     ]);
   }();
 

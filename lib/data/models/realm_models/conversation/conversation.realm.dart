@@ -28,9 +28,9 @@ class Conversation extends _Conversation
     );
     RealmObjectBase.set(this, 'avatar', avatar);
     RealmObjectBase.set(this, 'name', name);
-    RealmObjectBase.set(this, 'lastMessage', lastMessage);
-    RealmObjectBase.set(this, 'lastMessageAt', lastMessageAt);
-    RealmObjectBase.set(this, 'createdAt', createdAt);
+    RealmObjectBase.set(this, 'last_message', lastMessage);
+    RealmObjectBase.set(this, 'last_message_at', lastMessageAt);
+    RealmObjectBase.set(this, 'created_at', createdAt);
   }
 
   Conversation._();
@@ -59,24 +59,24 @@ class Conversation extends _Conversation
 
   @override
   String? get lastMessage =>
-      RealmObjectBase.get<String>(this, 'lastMessage') as String?;
+      RealmObjectBase.get<String>(this, 'last_message') as String?;
   @override
   set lastMessage(String? value) =>
-      RealmObjectBase.set(this, 'lastMessage', value);
+      RealmObjectBase.set(this, 'last_message', value);
 
   @override
   DateTime? get lastMessageAt =>
-      RealmObjectBase.get<DateTime>(this, 'lastMessageAt') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'last_message_at') as DateTime?;
   @override
   set lastMessageAt(DateTime? value) =>
-      RealmObjectBase.set(this, 'lastMessageAt', value);
+      RealmObjectBase.set(this, 'last_message_at', value);
 
   @override
   DateTime? get createdAt =>
-      RealmObjectBase.get<DateTime>(this, 'createdAt') as DateTime?;
+      RealmObjectBase.get<DateTime>(this, 'created_at') as DateTime?;
   @override
   set createdAt(DateTime? value) =>
-      RealmObjectBase.set(this, 'createdAt', value);
+      RealmObjectBase.set(this, 'created_at', value);
 
   @override
   Stream<RealmObjectChanges<Conversation>> get changes =>
@@ -96,9 +96,9 @@ class Conversation extends _Conversation
       'members': members.toEJson(),
       'avatar': avatar.toEJson(),
       'name': name.toEJson(),
-      'lastMessage': lastMessage.toEJson(),
-      'lastMessageAt': lastMessageAt.toEJson(),
-      'createdAt': createdAt.toEJson(),
+      'last_message': lastMessage.toEJson(),
+      'last_message_at': lastMessageAt.toEJson(),
+      'created_at': createdAt.toEJson(),
     };
   }
 
@@ -111,9 +111,9 @@ class Conversation extends _Conversation
         members: fromEJson(ejson['members']),
         avatar: fromEJson(ejson['avatar']),
         name: fromEJson(ejson['name']),
-        lastMessage: fromEJson(ejson['lastMessage']),
-        lastMessageAt: fromEJson(ejson['lastMessageAt']),
-        createdAt: fromEJson(ejson['createdAt']),
+        lastMessage: fromEJson(ejson['last_message']),
+        lastMessageAt: fromEJson(ejson['last_message_at']),
+        createdAt: fromEJson(ejson['created_at']),
       ),
       _ => raiseInvalidEJson(ejson),
     };
@@ -135,15 +135,22 @@ class Conversation extends _Conversation
         ),
         SchemaProperty('avatar', RealmPropertyType.string, optional: true),
         SchemaProperty('name', RealmPropertyType.string, optional: true),
-        SchemaProperty('lastMessage', RealmPropertyType.string, optional: true),
+        SchemaProperty(
+          'lastMessage',
+          RealmPropertyType.string,
+          mapTo: 'last_message',
+          optional: true,
+        ),
         SchemaProperty(
           'lastMessageAt',
           RealmPropertyType.timestamp,
+          mapTo: 'last_message_at',
           optional: true,
         ),
         SchemaProperty(
           'createdAt',
           RealmPropertyType.timestamp,
+          mapTo: 'created_at',
           optional: true,
         ),
       ],

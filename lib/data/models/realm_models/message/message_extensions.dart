@@ -16,7 +16,7 @@ extension MessageFirestoreExtension on Message {
 
 extension MessageRelationshipExtension on Message {
   static List<RealmRelationship> get realmOutgoingRelationships => [
-        RealmRelationship<User>('senderId', 'sender'),
+        RealmRelationship<User>('sender_id', 'sender'),
       ];
 
   static List<RealmRelationship> get realmIncomingRelationships => const [];
